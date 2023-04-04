@@ -28,7 +28,7 @@
   </div>
   <div class="container">
     <div id="left-column" class="column">
-      <p><h3>Combat Simulator Version 0.39</h3></p>
+      <p><h3>Combat Simulator Version 0.41</h3></p>
       <form id="character-form">
         <label for="character1">Character 1:</label>
         <select id="character1" name="character1"></select>
@@ -150,9 +150,10 @@
   </div>
 </div>
     <script>
-	 
+ 
 document.getElementById("fight-button").disabled = false;
 document.getElementById("load-button").disabled = false;
+var checkImage = false;
 var resetTr = false;
 var gameStop = false;
 var delayTime = 5050 - (document.getElementById('slider').value * 50);
@@ -685,26 +686,20 @@ alert('Characters Loaded!');
 	var randomIndex;
     var combatText;
     var skillText1;
-    var skillText2;
-	
+    var skillText2;	
   character1 = characters.find(c => c.name === document.getElementById("character1").value);
   character2 = characters.find(c => c.name === document.getElementById("character2").value);
-
-
 if (!character1 || !character2) { // make sure both characters are selected before starting the fight
   alert("Please select two characters to start the fight!");
   document.getElementById("fight-button").disabled = false;
   return;
 }
-resetTr = false;
-document.getElementById("reset-button").disabled = false;
-document.getElementById("load-button").disabled = true;
-document.getElementById("fight-button").disabled =true;
-document.getElementById("character1").disabled = true;
-document.getElementById("character2").disabled = true;
 
 player1Image.src="./images/"+character1.name+".jpg";
 player2Image.src="./images/"+character2.name+".jpg";
+/*
+if (!checkImage){
+
 //var player1Image = new Image();
 player1Image.src = "./images/" + character1.name + ".jpg";
 player1Image.onerror = function() {
@@ -715,6 +710,17 @@ player2Image.src = "./images/" + character2.name + ".jpg";
 player2Image.onerror = function() {
   player2Image.src = "./images/" + character2.name + ".png";  // Try .png version if .jpg version doesn't exist
 };
+checkImage = true;
+}	
+*/
+
+resetTr = false;
+document.getElementById("reset-button").disabled = false;
+document.getElementById("load-button").disabled = true;
+document.getElementById("fight-button").disabled =true;
+document.getElementById("character1").disabled = true;
+document.getElementById("character2").disabled = true;
+
 
 result += "<p><H1><b><span style=\"color: orange;\">" + character1.name + " (" + character1.ali + ") vs. " + character2.name + " (" + character2.ali + ")</span></H1></p>";
 
