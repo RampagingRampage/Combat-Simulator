@@ -1,6 +1,6 @@
 Combat Simulator 
 is a simple and user-friendly simulator that allows you to simulate battles between your favorite superheroes, mythical gods, monsters, or any other characters you can imagine. The simulator comes with default characters and skills, but you can also create your own custom characters and skills to make the battles even more exciting.
-You can load other lists I added by typing the trigger words: “scary”, “titan”, “mvp”, and “dragonball”.
+You can load other lists I added by typing the trigger words: “scary”, “titan”, “xmen”, “mvp”,  and “dragonball”.
 To view your custom characters during the simulation, make sure you place an image with the same name as the character into the “images” folder.
 
 Creating Characters and Skills
