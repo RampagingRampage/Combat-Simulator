@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Character Combat Simulator</title>
+  <style>
+  .tab-content {      display: none;    }
+  #tab1-content {     display: block;   }
+  body.dark-mode {    background-color: #1c1c1c;    color: #ffffff;  }
+  .container {    display: flex;    height: 100vh;  }
+  .column {    flex-grow: 1;    overflow: auto;  }
+  #left-column {    width: 40%;  }
+  #right-column {    width: 70%;    display: flex;    flex-direction: column;  }
+  progress::-webkit-progress-value {    background-color: black;  }
+  #progress-bar {    width: 42%;  }
+  .column2 {  float: left;}
+  .left-column2 {  width: 50%;}
+  .right-column2 {  width: 50%;  float: right;}
+  #output {position: fixed;  bottom: 10px;    max-width: 30%;  word-wrap: break-word !important;}
+  </style>
+  </head>
+<body class="dark-mode">
+   <div id="tab1-content" class="tab-content">
+    <div class="tab-buttons">
+    <button onclick="showTab('tab2')"style="width:100px;position: fixed; top: 10px; left: 340px;"><b>Character<br>Builder</b></button>
+    <button onclick="showTab('tab3')"style="width:100px;position: fixed; top: 50px; left: 340px;"><b>Skill<br>Builder</b></button>
+    <button onclick="showTab('tab4')"style="width:100px;position: fixed; top: 90px; left: 340px;"><b>Profile &<br>Settings</b></button>
+  </div>
+  <div class="container">
+    <div id="left-column" class="column">
+      <p><h3>Combat Simulator Version 0.46</h3></p>
+      <form id="character-form">
+        <label for="character1">Character 1</label>
+        <select id="character1" name="character1"></select>
+		<button id="load-button" type="button" onclick="loadCharacters();" disabled>Load Characters!</button>
+        <br>
+        <label for="character2">Character 2</label>
+        <select id="character2" name="character2" style= "margin-top: 4px;"></select>
+		<textarea id="textInput" rows="1" cols="12" style= "height: 10px; margin-top: 2px;"></textarea>
+        <br>
+        <button id="fight-button" type="button" onclick="startFight();" disabled>Fight!</button>
+        <button id="reset-button" type="button" onclick="resetTr = true; checkReset();" disabled>Reset</button>
+        <label for="slider">Speed:</label>
+        <input type="range" id="slider" name="slider" min="1" max="100" value="20" oninput="delayTime = 5050 - (this.value * 50 );">
+        <br>
+        <progress id="progress-bar" value="0" max="100"></progress>
+        <div id="stats-container"></div>
+        <div id="winner-container"></div>
+		<br>
+<img id="player1Image" src="./images/" style="width: 200px; height: auto;">
+<img id="player2Image" src="./images/" style="width: 200px; height: auto;">
+      </form>
+    </div>
+    <div id="right-column" class="column">
+                                                                                                         <h1>Battle Mode!</h1>
+      <div id="battle-result"></div>
+    </div>
+  </div>
+</div>
+    <div id="tab2-content" class="tab-content">
+  <div class="tab-buttons">
+    <button onclick="showTab('tab1')"style="width:100px;position: fixed; top: 10px; left: 340px;"><b>Battle<br>Mode</b></button>
+    <button onclick="showTab('tab3')"style="width:100px;position: fixed; top: 50px; left: 340px;"><b>Skill<br>Builder</b></button>
+    <button onclick="showTab('tab4')"style="width:100px;position: fixed; top: 90px; left: 340px;"><b>Profile &<br>Settings</b></button>
+  </div>
+      <form style="position: relative; top: 300px;">
+      <label for="chname">Name:</label>
+      <input type="text" id="chname" name="name" onchange="updateCharacterSave();">
+      <label for="strength">Strength:</label>      <input type="number" id="str" name="strength" min="1" max="20" onchange="updateCharacterSave();">
+      <label for="dexterity">Dexterity:</label>      <input type="number" id="dex" name="dexterity" min="1" max="20" onchange="updateCharacterSave();">
+      <label for="constitution">Constitution:</label>      <input type="number" id="con" name="constitution" min="1" max="20" onchange="updateCharacterSave();">
+      <label for="intelligence">Intelligence:</label>      <input type="number" id="int" name="intelligence" min="1" max="20" onchange="updateCharacterSave();">
+      <label for="wisdom">Wisdom:</label>      <input type="number" id="wis" name="wisdom" min="1" max="20"onchange="updateCharacterSave();">
+      <label for="charisma">Charisma:</label>      <input type="number" id="cha" name="charisma" min="1" max="20" onchange="updateCharacterSave();">
+	  <label for="ali">Alignment:</label><select id="ali" name="ali" onchange="updateCharacterSave();">
+  <option value="LG">Lawful Good</option>
+  <option value="NG">Neutral Good</option>
+  <option value="CG">Chaotic Good</option>
+  <option value="LN">Lawful Neutral</option>
+  <option value="N">True Neutral</option>
+  <option value="CN">Chaotic Neutral</option>
+  <option value="LE">Lawful Evil</option>
+  <option value="NE">Neutral Evil</option>
+  <option value="CE">Chaotic Evil</option>
+</select>
+	     <div id="right-column" class="column">
+                                                                                                         <h1>Character Creation!</h1>		
+         <input id="saveBtn" type="button" value="Save" onclick="updateCharacterSave(); saveCharacter()" style="font-size: 20px;">
+		 <input type="button" value="Randomize" onclick="rollStats();updateCharacterSave();" style="width: 200px;">
+	    </div>
+    </form>
+</div>
+    <div id="tab3-content" class="tab-content">
+  <div class="tab-buttons">
+    <button onclick="showTab('tab1')"style="width:100px;position: fixed; top: 10px; left: 340px;"><b>Battle<br>Mode</b></button>
+    <button onclick="showTab('tab2')"style="width:100px;position: fixed; top: 50px; left: 340px;"><b>Character<br>Builder</b></button>
+    <button onclick="showTab('tab4')"style="width:100px;position: fixed; top: 90px; left: 340px;"><b>Profile &<br>Settings</b></button>
+  </div>
+  <div id="left-column2"  class="column2">                                                                           <h1>Skill Creation Mode</h1>                                        
+<div><input type="text" id="skill" name="skill">	<label for="skill">Skill Name</label></div>
+<div><input type="text" id="users" name="users"><label for="users">users or "ANY"</label></div>
+<div><textarea id="text" name="text" rows="4" cols="21"></textarea><label for="text">Description</label></div>
+<div><input type="number" value="0"  id="buffdur"name="buffdur"><label for="buffdur">Buff Duration</label></div>
+<div><input type="number" value="0"  id="buffstr" name="buffstr"><label for="buffstr">Buff Strength</label></div>
+<div><input type="number" value="0"  id="buffdex" name="buffdex"><label for="buffdex">Buff Dextertity:</label></div>
+<div><input type="number" value="0"  id="buffcon" name="buffcon"><label for="buffcon">Buff Constitution:</label></div>
+<div><input type="number" value="0"  id="buffint" name="buffint"><label for="buffint">Buff Intelligence:</label></div>
+<div><input type="number" value="0"  id="buffwis" name="buffwis"><label for="buffwis">Buff Wisdom:</label></div>
+<div><input type="number" value="0"  id="buffcha" name="buffcha"><label for="buffcha">Buff Charisma:</label></div>
+<div><input type="number" value="0"  id="buffhea" name="buffhea"><label for="buffhea">Buff Health:</label></div>
+<div><input type="number" value="0"  id="buffres" name="buffres"><label for="buffres">Buff Resistance:</label></div>
+<div><input type="number" value="0"  id="bufffor" name="bufffor"><label for="bufffor">Buff Force:</label></div>
+<div><input type="number" value="0"  id="buffmag" name="buffmag"><label for="buffmag">Buff Magic:</label></div>
+<div><input type="number" value="0"  id="buffdef" name="buffdef"><label for="buffdef">Buff Defense:</label></div>
+<div><input type="number" value="0"  id="buffend" name="buffend"><label for="buffend">Buff Endurance:</label></div>
+<div><input type="number" value="0"  id="buffwil" name="buffwil"><label for="buffwil">Buff Willpower:</label></div>
+<div><input type="number" value="0"  id="buffant" name="buffant"><label for="buffant">Buff Anticipation:</label></div>
+<div><input type="number" value="0"  id="buffref" name="buffref"><label for="buffref">Buff Reflexes:</label></div>
+<div><input type="number" value="0"  id="buffrec" name="buffrec"><label for="buffrec">Buff Recovery:</label></div>
+</div>
+  <div id="left-column2"  class="column2"><br><br><br><br><br><br><br>
+<div><input type="number" value="0"  id="damage" name="damage"><label for="damage">Damage Delt:</label></div>
+<div><input type="number" value="0"  id="debuffdur" name="debuffdur"><label for="debuffdur">Debuff Duration:</label></div>
+<div><input type="number" value="0"  id="stundur" name="stundur"><label for="stundur">Stun Duration:</label></div>
+<div><input type="number" value="0"  id="debuffstr" name="debuffstr"><label for="debuffstr">Debuff STR:</label></div>
+<div><input type="number" value="0"  id="debuffdex" name="debuffdex"><label for="debuffdex">Debuff DEX:</label></div>
+<div><input type="number" value="0"  id="debuffcon" name="debuffcon"><label for="debuffcon">Debuff CON:</label></div>
+<div><input type="number" value="0"  id="debuffint" name="debuffint"><label for="debuffint">Debuff INT:</label></div>
+<div><input type="number" value="0"  id="debuffwis" name="debuffwis"><label for="debuffwis">Debuff WIS:</label></div>
+<div><input type="number" value="0"  id="debuffcha" name="debuffcha"><label for="debuffcha">Debuff CHA:</label></div>
+<div><input type="number" value="0"  id="debuffhea" name="debuffhea"><label for="debuffhea">Debuff HEA:</label></div>
+<div><input type="number" value="0"  id="debuffres" name="debuffres"><label for="debuffres">Debuff RES:</label></div>
+<div><input type="number" value="0"  id="debufffor" name="debufffor"><label for="debufffor">Debuff FOR:</label></div>
+<div><input type="number" value="0"  id="debuffmag" name="debuffmag"><label for="debuffmag">Debuff MAG:</label></div>
+<div><input type="number" value="0"  id="debuffdef" name="debuffdef"><label for="debuffdef">Debuff DEF:</label></div>
+<div><input type="number" value="0"  id="debuffend" name="debuffend"><label for="debuffend">Debuff END:</label></div>
+<div><input type="number" value="0"  id="debuffwil" name="debuffwil"><label for="debuffwil">Debuff WIL:</label></div>
+<div><input type="number" value="0"  id="debuffant" name="debuffant"><label for="debuffant">Debuff ANT:</label></div>
+<div><input type="number" value="0"  id="debuffref" name="debuffref"><label for="debuffref">Debuff REF:</label></div>
+<div><input type="number" value="0"  id="debuffrec" name="debuffrec"><label for="debuffrec">Debuff REC:</label></div>
+<button onclick="generateSkill()">Generate Skill</button>
+ </div> 
+ <p id="output">
+</div>
+    <div id="tab4-content" class="tab-content">
+  <div class="tab-buttons">
+    <button onclick="showTab('tab1')"style="width:100px;position: fixed; top: 10px; left: 340px;"><b>Battle<br>Mode</b></button>
+    <button onclick="showTab('tab2')"style="width:100px;position: fixed; top: 50px; left: 340px;"><b>Character<br>Builder</b></button>
+    <button onclick="showTab('tab3')"style="width:100px;position: fixed; top: 90px; left: 340px;"><b>Profile <br>Builder</b></button>
+  </div>
+</div>
+    <script>
+var AUTO = false;///auto mode
+     document.getElementById("fight-button").disabled = false;
+    document.getElementById("load-button").disabled = false;
+    player1Image.src = "./images/Default.jpg";
+    player2Image.src = "./images/Default.jpg";
+var checkImage = false;
+var resetTr = false;
+var gameStop = false;
+var delayTime = 5050 - (document.getElementById('slider').value * 50);
+var interval;
+var result = "";
+var round = 0; var maxRounds = 99;
+var select1; var select2;
+var selectedIndex1; var selectedIndex2;
+var introTexts = []; var combatTexts = []; var combatTextsFin = [];
+var combatTextsDoubleFin = []; var combatTextsDoubleTie = [];
+var character1; var character2;
+var character1Stats; var character2Stats;
+var healthMax1; var healthMax2;
+var stunDuration1 = 0; var stunDuration2 = 0;
+var buffDuration1 = 0; var buffDuration2 = 0;
+var debuffDuration1 = 0; var debuffDuration2 = 0;
+var Skill = []; var addReadSkills; var defaultSkillList = []; var charSkillList = [];
+var character1Buffs = {}; var character1Debuffs = {};
+var character2Buffs = {}; var character2Debuffs = {};
+var player; var result;
+var characters = [
+{"name": "Odin", "str": 60, "dex": 50, "con": 60, "int": 44, "wis": 60, "cha": 50, "ali": "N"},
+{"name": "Zeus", "str": 60, "dex": 60, "con": 60, "int": 40, "wis": 60, "cha": 50, "ali": "NG"},
+{"name": "Superman", "str": 80, "dex": 70, "con": 70, "int": 22, "wis": 24, "cha": 25, "ali": "LG"},
+{"name": "The Hulk", "str": 80, "dex": 25, "con": 90, "int": 8, "wis": 5, "cha": 5, "ali": "N"},
+{"name": "Thor", "str": 60, "dex": 60, "con": 60, "int": 40, "wis": 40, "cha": 30, "ali": "NG"},
+{"name": "Hercules", "str": 70, "dex": 35, "con": 80, "int": 34, "wis": 35, "cha": 30, "ali": "CG"},
+{"name": "Shazam", "str": 80, "dex": 60, "con": 50, "int": 14, "wis": 18, "cha": 15, "ali": "LG"},
+{"name": "Batman", "str": 20, "dex": 20, "con": 20, "int": 20, "wis": 20, "cha": 20, "ali": "CG"},
+{"name": "Athena", "str": 30, "dex": 30, "con": 40, "int": 50, "wis": 60, "cha": 40, "ali": "LG"},
+{"name": "Apollo", "str": 20, "dex": 70, "con": 30, "int": 28, "wis": 28, "cha": 90, "ali": "CG"},
+{"name": "Poseidon", "str": 70, "dex": 50, "con": 40, "int": 20, "wis": 30, "cha": 26, "ali": "CN"},
+{"name": "Loki", "str": 15, "dex": 60, "con": 40, "int": 40, "wis": 50, "cha": 50, "ali": "CN"},
+{"name": "Wonder Woman","str": 50, "dex": 55, "con": 48, "int": 24, "wis": 36, "cha": 28, "ali": "NG"},
+{"name": "The Flash", "str": 40, "dex": 90, "con": 50, "int": 12, "wis": 15, "cha": 25, "ali": "LG"},
+{"name": "Supergirl", "str": 50, "dex": 50, "con": 50, "int": 20, "wis": 12, "cha": 30, "ali":"LG"}
+                  ];
+var defaultCharacters = characters.slice();
+    resetSkills(3);
+    setupCharacterStats();
+    texts();
+    loadDefaultSkills();
+    function showTab(tabName) {
+      // Hide all tab contents
+      var tabContents = document.getElementsByClassName("tab-content");
+      for (var i = 0; i < tabContents.length; i++) {
+        tabContents[i].style.display = "none";
+      }
+
+      // Show the selected tab content
+      var selectedTabContent = document.getElementById(tabName + "-content");
+      selectedTabContent.style.display = "block";
+    }
+    function loadDefaultSkills() {
+ defaultSkillList =[///todo: 
+  {"name":"Taunt","users":"ANY","text":"[player] exchanges some choice words with [opponent]!","buffstr":5,"buffdex":5,"buffcon":5,"buffint":5,"buffwis":5,"buffcha":5,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":0,"buffdur":1,"damage":0},
+ 
+  {"name":"Distract","users":"ANY","text":"[player] attempts to distract [opponent].","buffstr":0,"buffdex":0,"buffcon":0,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":2,"debuffdur":0,"buffdur":0,"damage":0},
+  
+  {"name":"SolarCharge","users":"Superman","text":"[player] lifts off into the atmosphere becoming engulfed in sunlight.","buffstr":10,"buffdex":10,"buffcon":10,"buffint":10,"buffwis":10,"buffcha":10,"buffhea":10,"buffres":10,"bufffor":10,"buffmag":0,"buffdef":10,"buffend":10,"buffwil":10,"buffant":10,"buffref":10,"buffrec":20,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":0,"buffdur":2,"damage":0},
+  
+  {"name":"SuperJump","users":"Superman, Zeus, Supergirl, Wonder Woman, The Hulk, Thor, Odin, Hercules","text":"[player] blasts off into the air with a deafening jump.","buffstr":5,"buffdex":10,"buffcon":0,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":10,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":0,"buffdur":2,"damage":0},
+  
+  {"name":"SuperSpeed","users":"Superman, Zeus, Supergirl, Shazam, Wonder Woman, The Flash, Thor, Odin","text":"[player] dashes and weaves at an immense speed.","buffstr":8,"buffdex":20,"buffcon":0,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":0,"buffdur":2,"damage":0},
+ 
+  {"name":"Flight","users":"Superman, Zeus, Supergirl, Shazam, Wonder Woman, Thor, Odin","text":"[player] lifts off into the air at an incredible speed.","buffstr":8,"buffdex":20,"buffcon":0,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":0,"buffdur":2,"damage":0},
+  
+  {"name":"IceBreath","users":"Superman, Zeus","text":"[player] begins to blow out a freezing torrent of air towards [opponent], causing them to quickly become entombed in ice.","buffstr":0,"buffdex":0,"buffcon":0,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":100,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":40,"debuffref":40,"debuffrec":0,"stundur":3,"debuffdur":3,"buffdur":0,"damage":0},  
+ 
+  {"name":"HeatVision","users":"Superman","text":"[player] unleashes a powerful flaming beam from their eyes, scorching [opponent] and dealing [damage] fire damage.","buffstr":0,"buffdex":0,"buffcon":0,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":0,"buffdur":0,"damage":Math.floor(Math.random() * 100) + 50},  
+	 
+   {"name":"LightningBolt","users":"Zeus, Shazam","text":"[player] charges up a ball of blinding plasma, unleashing it as a bolt of lightning at [opponent] dealing [damage] lightning damage and reducing their speed.","buffstr":0,"buffdex":0,"buffcon":0,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":20,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":2,"buffdur":0,"damage":Math.floor(Math.random() * 50) + 50},
+ 
+   {"name":"WisdomOfSolomon","users":"Shazam","text":"[player] gains The Wisdom of Solomon, significantly increasing their mental fortitude.","buffstr":0,"buffdex":0,"buffcon":0,"buffint":20,"buffwis":40,"buffcha":20,"buffhea":10,"buffres":10,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":0,"buffdur":3,"damage":0},
+   
+   {"name":"HammerToss","users":"Thor","text":"[player] launches Mjolnir into the ground at [opponent]'s feet causing a large explosion for [damage] damage, and throwing a cloud of debris into the air.","buffstr":0,"buffdex":10,"buffcon":0,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":20,"debuffref":0,"debuffrec":0,"stundur":2,"debuffdur":1,"buffdur":1,"damage":Math.floor(Math.random() * 50) + 20},
+   
+	{"name":"ThunderClap","users":"The Hulk, Hercules","text":"With a powerful thunderclap, [player] smashes their hands together, generating a shockwave that launches them into the air and throws [opponent] in the opposite direction dealing [damage] damage.","buffstr":3,"buffdex":7,"buffcon":0,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":20,"debuffrec":0,"stundur":1,"debuffdur":2,"buffdur":1,"damage":Math.floor(Math.random() * 40) + 20},
+	
+   {"name":"HulkEnrage","users":"The Hulk","text":"Seething with rage, [player] clenches his mighty fists causing his already impressive frame to bulge with more raw power.  A fierce green glow radiates from within them.","buffstr":20,"buffdex":10,"buffcon":10,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":20,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":0,"buffdur":3,"damage":0},
+ 
+   {"name":"Regenerate","users":"The Hulk, Dead Pool","text":"[player] rests momentarily, generating energy and recovering health quickly.","buffstr":0,"buffdex":0,"buffcon":10,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":50,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":0,"buffdur":2,"damage":0},
+ 
+   {"name":"ExploitWeakness","users":"Batman","text":"[player] exploits [opponent]'s weaknesses gaining the upperhand.","buffstr":10,"buffdex":10,"buffcon":10,"buffint":10,"buffwis":10,"buffcha":10,"buffhea":0,"buffres":10,"bufffor":10,"buffmag":10,"buffdef":10,"buffend":10,"buffwil":10,"buffant":10,"buffref":10,"buffrec":10,"debuffstr":30,"debuffdex":30,"debuffcon":30,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":20,"debufffor":20,"debuffmag":20,"debuffdef":20,"debuffend":20,"debuffwil":20,"debuffant":20,"debuffref":20,"debuffrec":20,"stundur":0,"debuffdur":3,"buffdur":3,"damage":0},
+  
+   {"name":"LesserDiscoverWeakness","users":"Batman, Athena, Loki","text":"[player] studies over [opponent] attempting to find a weakness.","buffstr":0,"buffdex":0,"buffcon":0,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":20,"debuffdex":20,"debuffcon":20,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":20,"debufffor":20,"debuffmag":20,"debuffdef":20,"debuffend":20,"debuffwil":0,"debuffant":20,"debuffref":20,"debuffrec":20,"stundur":0,"debuffdur":2,"buffdur":0,"damage":0},
+  
+   {"name":"ForceField","users":"Batman","text":"[player] throws down an unusual device that casts out an engulfing field, increasing their armor and resistances significantly.","buffstr":0,"buffdex":0,"buffcon":0,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":0,"buffres":0,"bufffor":0,"buffmag":0,"buffdef":100,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":0,"buffdur":2,"damage":0},
+ 
+   {"name":"NanoPen","users":"Batman","text":"[player] uses an auto enjection syringe filled with nano particles to instantly heal critical wounds.","buffstr":0,"buffdex":0,"buffcon":20,"buffint":0,"buffwis":0,"buffcha":0,"buffhea":60,"buffres":20,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":0,"buffdur":2,"damage":0},
+  
+    {"name":"OdinForce","users":"Odin","text":"[player] charges up Odin Force...  there is still time to run!","buffstr":20,"buffdex":20,"buffcon":10,"buffint":20,"buffwis":30,"buffcha":10,"buffhea":10,"buffres":10,"bufffor":0,"buffmag":0,"buffdef":0,"buffend":0,"buffwil":0,"buffant":0,"buffref":0,"buffrec":0,"debuffstr":0,"debuffdex":0,"debuffcon":0,"debuffint":0,"debuffwis":0,"debuffcha":0,"debuffhea":0,"debuffres":0,"debufffor":0,"debuffmag":0,"debuffdef":0,"debuffend":0,"debuffwil":0,"debuffant":0,"debuffref":0,"debuffrec":0,"stundur":0,"debuffdur":0,"buffdur":3,"damage":0}
+ 
+ ];
+ 
+ 
+ }
+    function addReadSkills(skill, player) {
+ var text = skill.text;//ONLY CALL WHEN BUFF IS CASTED  all effects stack
+ var users= skill.users;
+ if (player === 1){
+   stunDuration2 += skill.stundur;
+   buffDuration1 += skill.buffdur;
+   debuffDuration2 += skill.debuffdur;
+    character1Buffs.buffstr += skill.buffstr;
+    character1Buffs.buffdex += skill.buffdex;
+    character1Buffs.buffcon += skill.buffcon;
+    character1Buffs.buffint += skill.buffint;
+    character1Buffs.buffwis += skill.buffwis;
+    character1Buffs.buffcha += skill.buffcha;
+    character1Buffs.buffhea += skill.buffhea;
+    character1Buffs.buffres += skill.buffres;
+    character1Buffs.bufffor += skill.bufffor;
+    character1Buffs.buffmag += skill.buffmag;
+    character1Buffs.buffdef += skill.buffdef;
+    character1Buffs.buffend += skill.buffend;
+    character1Buffs.buffwil += skill.buffwil;
+    character1Buffs.buffant += skill.buffant;
+    character1Buffs.buffref += skill.buffref;
+    character1Buffs.buffrec += skill.buffrec;
+    character2Debuffs.debuffstr += skill.debuffstr;
+    character2Debuffs.debuffdex += skill.debuffdex;
+    character2Debuffs.debuffcon += skill.debuffcon;
+    character2Debuffs.debuffint += skill.debuffint;
+    character2Debuffs.debuffwis += skill.debuffwis;
+    character2Debuffs.debuffcha += skill.debuffcha;
+    character2Debuffs.debuffhea += skill.debuffhea;
+    character2Debuffs.debuffres += skill.debuffres;
+    character2Debuffs.debufffor += skill.debufffor;
+    character2Debuffs.debuffmag += skill.debuffmag;
+    character2Debuffs.debuffdef += skill.debuffdef;
+    character2Debuffs.debuffend += skill.debuffend;
+    character2Debuffs.debuffwil += skill.debuffwil;
+    character2Debuffs.debuffant += skill.debuffant;
+    character2Debuffs.debuffref += skill.debuffref;
+    character2Debuffs.debuffrec += skill.debuffrec;
+character2Debuffs.damage = Math.floor(Math.max(0, (character1.magic - character2.resistance - character2.magic + skill.damage) * (1 + (Math.random() - 0.5) * 0.2)));
+	 } else if (player === 2){
+   stunDuration1 += skill.stundur;
+   buffDuration2 += skill.buffdur;
+   debuffDuration1 += skill.debuffdur;
+	character2Buffs.buffstr += skill.buffstr;
+    character2Buffs.buffdex += skill.buffdex;
+    character2Buffs.buffcon += skill.buffcon;
+    character2Buffs.buffint += skill.buffint;
+    character2Buffs.buffwis += skill.buffwis;
+    character2Buffs.buffcha += skill.buffcha;
+    character2Buffs.buffhea += skill.buffhea;
+    character2Buffs.buffres += skill.buffres;
+    character2Buffs.bufffor += skill.bufffor;
+    character2Buffs.buffmag += skill.buffmag;
+    character2Buffs.buffdef += skill.buffdef;
+    character2Buffs.buffend += skill.buffend;
+    character2Buffs.buffwil += skill.buffwil;
+    character2Buffs.buffant += skill.buffant;
+    character2Buffs.buffref += skill.buffref;
+    character2Buffs.buffrec += skill.buffrec;
+    character1Debuffs.debuffstr += skill.debuffstr;
+    character1Debuffs.debuffdex += skill.debuffdex;
+    character1Debuffs.debuffcon += skill.debuffcon;
+    character1Debuffs.debuffint += skill.debuffint;
+    character1Debuffs.debuffwis += skill.debuffwis;
+    character1Debuffs.debuffcha += skill.debuffcha;
+    character1Debuffs.debuffhea += skill.debuffhea;
+    character1Debuffs.debuffres += skill.debuffres;
+    character1Debuffs.debufffor += skill.debufffor;
+    character1Debuffs.debuffmag += skill.debuffmag;
+    character1Debuffs.debuffdef += skill.debuffdef;
+    character1Debuffs.debuffend += skill.debuffend;
+    character1Debuffs.debuffwil += skill.debuffwil;
+    character1Debuffs.debuffant += skill.debuffant;
+    character1Debuffs.debuffref += skill.debuffref;
+    character1Debuffs.debuffrec += skill.debuffrec;
+character1Debuffs.damage = Math.floor(Math.max(0, (character2.magic - character1.resistance - character1.magic + skill.damage) * (1 + (Math.random() - 0.5) * 0.2)));
+    }
+		 statCalculate();
+		 return text;//text
+}
+    function statCalculate() {
+	///isue with health being updated  need to calculate the difference and add the difference to health
+//calculate temp stats
+character1.strength = Math.max(1, character1.str + character1Buffs.buffstr - character1Debuffs.debuffstr);
+character1.dexterity = Math.max(1, character1.dex + character1Buffs.buffdex - character1Debuffs.debuffdex);
+character1.constitution = Math.max(1, character1.con + character1Buffs.buffcon - character1Debuffs.debuffcon);
+character1.intelligence = Math.max(1, character1.int + character1Buffs.buffint - character1Debuffs.debuffint);
+character1.wisdom = Math.max(1, character1.wis + character1Buffs.buffwis - character1Debuffs.debuffwis);
+character1.charisma = Math.max(1, character1.cha + character1Buffs.buffcha - character1Debuffs.debuffcha);
+
+character2.strength = Math.max(1, character2.str + character2Buffs.buffstr - character2Debuffs.debuffstr);
+character2.dexterity = Math.max(1, character2.dex + character2Buffs.buffdex - character2Debuffs.debuffdex);
+character2.constitution = Math.max(1, character2.con + character2Buffs.buffcon - character2Debuffs.debuffcon);
+character2.intelligence = Math.max(1, character2.int + character2Buffs.buffint - character2Debuffs.debuffint);
+character2.wisdom = Math.max(1, character2.wis + character2Buffs.buffwis - character2Debuffs.debuffwis);
+character2.charisma = Math.max(1, character2.cha + character2Buffs.buffcha - character2Debuffs.debuffcha);
+
+  character1.defense = Math.max(1, Math.floor((character1.strength + character1.dexterity + character1.constitution) * 0.33) + character1Buffs.buffdef - character1Debuffs.debuffdef);
+  character1.recovery = Math.max(1, Math.floor((character1.constitution + character1.wisdom + character1.intelligence) * 0.33) + character1Buffs.buffrec - character1Debuffs.debuffrec);
+  character1.force = Math.max(1, Math.floor((character1.strength + character1.dexterity + character1.constitution) * 0.33) + character1Buffs.bufffor - character1Debuffs.debufffor);
+  character1.magic = Math.max(1, Math.max(0, Math.floor(((character1.intelligence*3 + character1.wisdom*2 + character1.charisma) * 0.33)- 20) + character1Buffs.buffmag - character1Debuffs.debuffmag));
+
+  character1.resistance = Math.max(1, Math.floor((character1.constitution + character1.constitution + character1.intelligence) * .33) + character1Buffs.buffres - character1Debuffs.debuffres);
+  character1.anticipation = Math.max(1, Math.floor((character1.charisma + character1.wisdom) * .5) + character1Buffs.buffant - character1Debuffs.debuffant);
+  character1.willpower = Math.max(1, Math.floor((character1.intelligence + character1.wisdom) * .5) + character1Buffs.buffwil - character1Debuffs.debuffwil);
+  character1.endurance = Math.max(1, Math.floor((character1.strength + character1.constitution) * .5) + character1Buffs.buffend - character1Debuffs.debuffend);
+  character1.reflexes = Math.max(1, Math.floor((character1.dexterity + character1.wisdom) * .5) + character1Buffs.buffref - character1Debuffs.debuffref);
+  healthMax1 = Math.floor((character1.constitution * 10) + (character1.strength + character1.intelligence + character1.wisdom + character1.charisma + character1.dexterity));///  - Math.max(0,character1Debuffs.debuffhea));
+
+
+  character2.defense = Math.max(1, Math.floor((character2.strength + character2.dexterity + character2.constitution) * 0.33) + character2Buffs.buffdef - character2Debuffs.debuffdef);
+  character2.recovery = Math.max(1, Math.floor((character2.constitution + character2.wisdom + character2.intelligence) * 0.33) + character2Buffs.buffrec - character2Debuffs.debuffrec);
+  character2.force = Math.max(1, Math.floor((character2.str + character2.dexterity + character2.constitution) * 0.33) + character2Buffs.bufffor - character2Debuffs.debufffor);
+  character2.magic = Math.max(1, Math.max(0, Math.floor(((character2.intelligence*3 + character2.wisdom*2 + character2.charisma) * 0.33)- 20) + character2Buffs.buffmag - character2Debuffs.debuffmag));
+
+  character2.resistance = Math.max(1, Math.floor((character2.constitution + character2.constitution + character2.intelligence) * .33) + character2Buffs.buffres - character2Debuffs.debuffres);
+  character2.anticipation = Math.max(1, Math.floor((character2.charisma + character2.wisdom) * .5) + character2Buffs.buffant - character2Debuffs.debuffant);
+  character2.willpower = Math.max(1, Math.floor((character2.intelligence + character2.wisdom) * .5) + character2Buffs.buffwil - character2Debuffs.debuffwil);
+  character2.endurance = Math.max(1, Math.floor((character2.strength + character2.constitution) * .5) + character2Buffs.buffend - character2Debuffs.debuffend);
+  character2.reflexes = Math.max(1, Math.floor((character2.dexterity + character2.wisdom) * .5) + character2Buffs.buffref - character2Debuffs.debuffref);
+  healthMax2 = Math.floor((character2.constitution * 10) + (character2.strength + character2.intelligence + character2.wisdom + character2.charisma + character2.dexterity));// - Math.max(0,character2Debuffs.debuffhea));
+
+
+character1.health += Math.max(0, Math.floor(character1Buffs.buffhea - character1Debuffs.debuffhea));
+character2.health += Math.max(0, Math.floor(character2Buffs.buffhea - character2Debuffs.debuffhea));
+
+
+character1Stats = "";
+character2Stats = "";
+
+if (character1.health > healthMax1){character1.health = healthMax1;}
+if (character2.health > healthMax2){character2.health = healthMax2;}
+}
+    function loadCharacters() {
+
+var addCharacters = [];
+var textInput = document.getElementById('textInput').value;
+  try {
+    var lines = textInput.trim().split(/\n(?!\s*$)/);
+    for (var i = 0; i < lines.length; i++) {
+      var characterJson = lines[i];
+      var character = JSON.parse(characterJson);
+      addCharacters.push(character);
+    }
+  } catch (e) {
+    if (textInput.toLowerCase() !== "titan" && textInput.toLowerCase() !== "scary" && textInput.toLowerCase() !== "mvp" && textInput.toLowerCase() !== "dragonball" && textInput.toLowerCase() !== "xmen" && textInput.toLowerCase() !== "suicide" && textInput.toLowerCase() !== "theboys" && textInput.toLowerCase() !== "starwars" && textInput.toLowerCase() !== "guardians" && textInput.toLowerCase() !== "lotr" && textInput.toLowerCase() !== "marvel" && textInput.toLowerCase() !== "four"){
+	alert('Error: ' + e.message + ' Characters must be in the following format: {"name": "Name", "str":1, "dex": 1, "con": 1, "int": 1, "wis": 1, "cha": 1, "ali": "ALI"}');
+	//characters = defaultCharacters.slice();
+	return;
+	}else if (textInput.toLowerCase() === "titan"){
+   addCharacters = [
+{"name": "Atlas", "str": 90, "dex": 30, "con": 120, "int": 30, "wis": 40, "cha": 30, "ali": "LN"},
+{"name": "Cronus", "str": 80, "dex": 50, "con": 70, "int": 40, "wis": 40, "cha": 30, "ali": "NE"},
+{"name": "Rhea", "str": 50, "dex": 60, "con": 70, "int": 60, "wis": 80, "cha": 70, "ali": "NG"},
+{"name": "Hyperion", "str": 70, "dex": 60, "con": 80, "int": 50, "wis": 50, "cha": 40, "ali": "LN"},
+{"name": "Iapetus", "str": 75, "dex": 50, "con": 75, "int": 40, "wis": 40, "cha": 30, "ali": "LE"},
+{"name": "Prometheus", "str": 50, "dex": 60, "con": 60, "int": 90, "wis": 80, "cha": 60, "ali": "CG"},
+{"name": "Typhon", "str": 100, "dex": 40, "con": 100, "int": 20, "wis": 20, "cha": 10, "ali": "CE"},
+{"name": "Echidna", "str": 60, "dex": 60, "con": 70, "int": 30, "wis": 50, "cha": 50, "ali": "NE"},
+{"name": "Python", "str": 80, "dex": 60, "con": 70, "int": 30, "wis": 40, "cha": 20, "ali": "CE"},
+{"name": "Chimera", "str": 70, "dex": 50, "con": 60, "int": 10, "wis": 20, "cha": 10, "ali": "CE"},
+{"name": "Cerberus", "str": 80, "dex": 60, "con": 80, "int": 10, "wis": 20, "cha": 10, "ali": "NE"}
+];
+}else if (textInput.toLowerCase() === "scary"){
+   addCharacters = [
+{"name": "Jason Voorhees", "str": 30, "dex": 10, "con": 50, "int": 5, "wis": 4, "cha": 1, "ali": "NE"},
+{"name": "Freddy Krueger", "str": 20, "dex": 20, "con": 50, "int": 15, "wis": 12, "cha": 12, "ali": "CE"},
+{"name": "Michael Myers", "str": 25, "dex": 15, "con": 50, "int": 5, "wis": 5, "cha": 1, "ali": "NE"},
+{"name": "Leatherface", "str": 9, "dex": 16, "con": 18, "int": 7, "wis": 7, "cha": 3, "ali": "CE"},
+{"name": "Pennywise", "str":40, "dex": 40, "con": 60, "int": 30, "wis": 40, "cha": 40, "ali": "CE"},
+{"name": "Chucky", "str": 5, "dex": 8, "con": 15, "int": 15, "wis": 20, "cha": 30, "ali": "CE"},
+{"name": "Dracula", "str": 30, "dex": 40, "con": 40, "int": 20, "wis": 30, "cha": 40, "ali": "NE"},
+{"name": "The Xenomorph", "str": 50, "dex": 30, "con": 50, "int": 10, "wis": 10, "cha": 5, "ali": "CE"},
+{"name": "The Predator", "str": 40, "dex": 40, "con": 50, "int": 30, "wis": 30, "cha": 10, "ali": "NE"},
+{"name": "Godzilla", "str": 70, "dex": 30, "con": 80, "int": 20, "wis": 30, "cha": 10, "ali": "N"},
+{"name": "King Kong", "str": 50, "dex": 30, "con": 40, "int": 10, "wis": 10, "cha": 10, "ali": "N"}
+];
+}else if (textInput.toLowerCase() === "xmen"){
+   addCharacters = [
+  {"name": "Wolverine", "str": 18, "dex": 20, "con": 18, "int": 12, "wis": 16, "cha": 10, "ali": "CG"},
+  {"name": "Cyclops", "str": 12, "dex": 16, "con": 14, "int": 16, "wis": 14, "cha": 12,  "ali": "LN"},
+  {"name": "Storm", "str": 14, "dex": 18, "con": 16, "int": 18, "wis": 20, "cha": 16, "ali": "NG"},
+  {"name": "Jean", "str": 10, "dex": 14, "con": 12,  "int": 20, "wis": 18, "cha": 20, "ali": "LG"},
+  {"name": "Rogue", "str": 18, "dex": 16, "con": 18, "int": 12, "wis": 14, "cha": 12, "ali": "CG"},
+  {"name": "Gambit", "str": 12, "dex": 20, "con": 12, "int": 16, "wis": 14, "cha": 18, "ali": "CN"},
+  {"name": "Beast", "str": 16, "dex": 12, "con": 16, "int": 20, "wis": 18, "cha": 10, "ali": "LG"},
+  {"name": "Iceman", "str": 12, "dex": 18, "con": 16, "int": 16, "wis": 14, "cha": 12, "ali": "CG"},
+  {"name": "Colossus", "str": 20, "dex": 10, "con": 20, "int": 10, "wis": 12, "cha": 10, "ali": "NG"},
+  {"name": "Professor X", "str": 8, "dex": 8, "con": 10, "int": 20, "wis": 18, "cha": 16, "ali": "LG"},
+  {"name": "Magneto", "str": 16, "dex": 14, "con": 16, "int": 18, "wis": 14, "cha": 12, "ali": "LE"},
+  {"name": "Nightcrawler", "str": 12, "dex": 20, "con": 14, "int": 14, "wis": 18, "cha": 16, "ali": "CG"}
+];
+}else if (textInput.toLowerCase() === "suicide"){
+   addCharacters = [
+   {"name": "Harley Quinn", "str": 8, "dex": 18, "con": 12, "int": 14, "wis": 10, "cha": 18, "ali": "CN"},
+   {"name": "Deadshot", "str": 14, "dex": 20, "con": 14, "int": 16, "wis": 14, "cha": 12, "ali": "NE"},
+   {"name": "Boomerang", "str": 12, "dex": 16, "con": 14, "int": 12, "wis": 10, "cha": 14, "ali": "CE"},
+   {"name": "King Shark", "str": 20, "dex": 12, "con": 18, "int": 6, "wis": 10, "cha": 8, "ali": "CN"},
+   {"name": "Enchantress", "str": 10, "dex": 14, "con": 12, "int": 20, "wis": 16, "cha": 16, "ali": "CE"},
+   {"name": "Bloodsport", "str": 16, "dex": 14, "con": 16, "int": 12, "wis": 14, "cha": 10, "ali": "NE"},
+   {"name": "Ratcatcher 2", "str": 10, "dex": 14, "con": 12, "int": 16, "wis": 18, "cha": 12, "ali": "NG"},
+   {"name": "Polka-Dot", "str": 10, "dex": 14, "con": 14, "int": 12, "wis": 16, "cha": 10, "ali": "LE"},
+   {"name": "Peacemaker", "str": 14, "dex": 16, "con": 18, "int": 10, "wis": 12, "cha": 10, "ali": "LN"},
+   {"name": "The Thinker", "str": 8, "dex": 10, "con": 10, "int": 20, "wis": 14, "cha": 8, "ali": "LE"},
+   {"name": "El Diablo", "str": 16, "dex": 14, "con": 16, "int": 10, "wis": 14, "cha": 12, "ali": "CG"}
+];
+}else if (textInput.toLowerCase() === "starwars"){
+   addCharacters = [
+   {"name": "Luke Skywalker", "str": 14, "dex": 16, "con": 14, "int": 14, "wis": 16, "cha": 16, "ali": "LG"},
+   {"name": "Darth Vader", "str": 18, "dex": 14, "con": 18, "int": 16, "wis": 16, "cha": 12, "ali": "LE"},
+   {"name": "Obi-Wan Kenobi", "str": 12, "dex": 16, "con": 12, "int": 18, "wis": 20, "cha": 16, "ali": "LG"},
+   {"name": "Yoda", "str": 12, "dex": 20, "con": 14, "int": 20, "wis": 20, "cha": 18, "ali": "LG"},
+   {"name": "Palpatine", "str": 10, "dex": 12, "con": 10, "int": 20, "wis": 18, "cha": 20, "ali": "LE"},
+   {"name": "Han Solo", "str": 16, "dex": 18, "con": 16, "int": 14, "wis": 14, "cha": 14, "ali": "CG"},
+   {"name": "Princess Leia", "str": 12, "dex": 14, "con": 12, "int": 16, "wis": 18, "cha": 18, "ali": "LG"},
+   {"name": "Chewbacca", "str": 20, "dex": 14, "con": 18, "int": 6, "wis": 12, "cha": 8, "ali": "CG"},
+   {"name": "Boba Fett", "str": 14, "dex": 20, "con": 16, "int": 14, "wis": 12, "cha": 10, "ali": "NE"},
+   {"name": "Mace Windu", "str": 16, "dex": 16, "con": 14, "int": 16, "wis": 18, "cha": 16, "ali": "LG"}
+];
+}else if (textInput.toLowerCase() === "guardians"){
+   addCharacters = [
+   {"name": "Star-Lord", "str": 12, "dex": 16, "con": 14, "int": 12, "wis": 12, "cha": 16, "ali": "CG"},
+   {"name": "Gamora", "str": 16, "dex": 20, "con": 16, "int": 12, "wis": 16, "cha": 12, "ali": "LN"},
+   {"name": "Drax", "str": 20, "dex": 14, "con": 18, "int": 10, "wis": 12, "cha": 10, "ali": "CN"},
+   {"name": "Rocket Raccoon", "str": 8, "dex": 20, "con": 12, "int": 18, "wis": 12, "cha": 10, "ali": "CN"},
+   {"name": "Groot", "str": 20, "dex": 10, "con": 20, "int": 8, "wis": 14, "cha": 10, "ali": "NG"},
+   {"name": "Mantis", "str": 8, "dex": 14, "con": 10, "int": 16, "wis": 20, "cha": 14, "ali": "NG"},
+   {"name": "Yondu Udonta", "str": 14, "dex": 18, "con": 16, "int": 10, "wis": 14, "cha": 10, "ali": "CN"},
+   {"name": "Nebula", "str": 16, "dex": 18, "con": 16, "int": 12, "wis": 14, "cha": 10, "ali": "LE"},
+   {"name": "The Collector", "str": 8, "dex": 10, "con": 10, "int": 20, "wis": 12, "cha": 16, "ali": "LE"},
+   {"name": "Ronan", "str": 18, "dex": 14, "con": 16, "int": 12, "wis": 14, "cha": 10, "ali": "LE"}
+];
+}else if (textInput.toLowerCase() === "theboys"){
+   addCharacters = [
+   {"name": "Homelander", "str": 60, "dex": 70, "con": 50, "int": 26, "wis": 26, "cha": 28, "ali": "LE"},
+   {"name": "Starlight", "str": 48, "dex": 58, "con": 36, "int": 18, "wis": 19, "cha": 24, "ali": "LG"},
+   {"name": "Black Noir", "str": 40, "dex": 56, "con": 30, "int": 10, "wis": 14, "cha": 1, "ali": "LN"},
+   {"name": "The Female", "str": 18, "dex": 18, "con": 16, "int": 10, "wis": 10, "cha": 10, "ali": "CN"},
+   {"name": "Billy Butcher", "str": 14, "dex": 16, "con": 14, "int": 12, "wis": 12, "cha": 10, "ali": "CN"},
+   {"name": "Mother's Milk", "str": 12, "dex": 12, "con": 16, "int": 14, "wis": 16, "cha": 12, "ali": "NG"},
+   {"name": "Kimiko Miyashiro", "str": 16, "dex": 20, "con": 16, "int": 10, "wis": 12, "cha": 10, "ali": "CN"},
+   {"name": "A-Train", "str": 14, "dex": 20, "con": 14, "int": 10, "wis": 10, "cha": 12, "ali": "LE"},
+   {"name": "Stormfront", "str": 18, "dex": 16, "con": 18, "int": 14, "wis": 12, "cha": 16, "ali": "CE"}
+];
+}else if (textInput.toLowerCase() === "marvel"){
+   addCharacters = [
+{"name": "Dead Pool", "str": 26, "dex": 32, "con": 48, "int": 20, "wis": 18, "cha": 36, "ali": "CN"},
+{"name": "Iron Man", "str": 36, "dex": 42, "con": 50, "int": 20, "wis": 22, "cha": 24, "ali": "NG"},
+{"name": "Doctor Strange", "str": 8, "dex": 34, "con": 25, "int": 32, "wis": 40, "cha": 28, "ali": "LG"},
+{"name": "Captain America", "str": 40, "dex": 40, "con": 60, "int": 22, "wis": 26, "cha": 18, "ali": "LG"},
+{"name": "Black Panther", "str": 25, "dex": 32, "con": 30, "int": 36, "wis": 20, "cha": 18,  "ali": "LG"},
+{"name": "Thanos", "str": 58, "dex": 66, "con": 58, "int": 58, "wis": 60, "cha": 44, "ali": "NE"},
+{"name": "Ultron", "str": 44, "dex": 56, "con": 44, "int": 58, "wis": 36, "cha": 8, "ali": "LE"},
+{"name": "Red Skull", "str": 38, "dex": 46, "con": 38, "int": 20, "wis": 16, "cha": 20, "ali": "LE"}//?
+];
+}else if (textInput.toLowerCase() === "four"){
+   addCharacters = [
+{"name": "Mr. Fantastic", "str": 20, "dex": 34, "con": 32, "int": 28, "wis": 20, "cha": 26, "ali": "NG"},
+{"name": "Invisible Woman", "str": 15, "dex": 22, "con": 24, "int": 18, "wis": 24, "cha": 18, "ali": "NG"},
+{"name": "Human Torch", "str": 14, "dex": 24, "con": 14, "int": 10, "wis": 16, "cha": 18, "ali": "CG"},
+{"name": "The Thing", "str": 28, "dex": 10, "con": 30, "int": 8, "wis": 12, "cha": 8, "ali": "NG"},
+{"name": "Doctor Doom", "str": 18, "dex": 16, "con": 20, "int": 28, "wis": 22, "cha": 16, "ali": "LE"},
+{"name": "Galactus", "str": 30, "dex": 10, "con": 30, "int": 28, "wis": 24, "cha": 20, "ali": "N"},
+{"name": "Annihilus", "str": 26, "dex": 20, "con": 24, "int": 14, "wis": 14, "cha": 10, "ali": "CE"},
+{"name": "Mole Man", "str": 12, "dex": 14, "con": 16, "int": 20, "wis": 18, "cha": 8, "ali": "NE"}
+];
+}else if (textInput.toLowerCase() === "lotr"){
+   addCharacters = [
+   {"name": "Gandalf", "str": 10, "dex": 12, "con": 16, "int": 20, "wis": 22, "cha": 18, "ali": "LG"},
+   {"name": "Legolas", "str": 14, "dex": 20, "con": 14, "int": 16, "wis": 18, "cha": 16, "ali": "CG"},
+   {"name": "Gimli", "str": 20, "dex": 10, "con": 18, "int": 12, "wis": 14, "cha": 8, "ali": "LG"},
+   {"name": "Aragorn", "str": 18, "dex": 16, "con": 18, "int": 14, "wis": 16, "cha": 16, "ali": "LG"},
+   {"name": "Galadriel", "str": 10, "dex": 16, "con": 12, "int": 20, "wis": 20, "cha": 22, "ali": "CG"},
+   {"name": "Saruman", "str": 10, "dex": 12, "con": 14, "int": 22, "wis": 20, "cha": 20, "ali": "LE"},
+   {"name": "Bilbo Baggins", "str": 8, "dex": 14, "con": 12, "int": 18, "wis": 16, "cha": 16, "ali": "NG"},
+   {"name": "Frodo Baggins", "str": 8, "dex": 18, "con": 12, "int": 14, "wis": 20, "cha": 16, "ali": "LG"},
+   {"name": "Samwise Gamgee", "str": 14, "dex": 12, "con": 16, "int": 12, "wis": 18, "cha": 14, "ali": "LG"},
+   {"name": "Gollum", "str": 10, "dex": 18, "con": 12, "int": 16, "wis": 14, "cha": 6, "ali": "NE"},
+   {"name": "Gandalf the Grey", "str": 12, "dex": 14, "con": 16, "int": 20, "wis": 22, "cha": 18, "ali": "NG"}
+];
+}else if (textInput.toLowerCase() === "mvp"){
+   addCharacters = [
+{"name": "Moloch", "str": 80, "dex": 50, "con": 70, "int": 20, "wis": 40, "cha": 40, "ali": "LE"},
+{"name": "Cthulhu", "str": 100, "dex": 50, "con": 80, "int": 30, "wis": 30, "cha": 30, "ali": "CE"},
+{"name": "Lucifer", "str": 70, "dex": 80, "con": 70, "int": 100, "wis": 90, "cha": 90, "ali": "LE"},
+{"name": "Modern Society", "str": 3300, "dex": 2095, "con": 4000, "int": 1000, "wis": 1000, "cha": 1000, "ali": "N"},
+{"name": "God", "str": 10000, "dex": 10000, "con": 10000, "int": 10000, "wis": 10000, "cha": 10000, "ali": "LG"},
+{"name": "Maestro", "str": 110, "dex": 55, "con": 130, "int": 38, "wis": 40, "cha": 36, "ali": "N"},
+{"name": "Jesus", "str": 50, "dex": 50, "con": 50, "int": 100, "wis": 100, "cha": 100, "ali": "LG"},
+{"name": "Rick Sanches", "str": 50, "dex": 50, "con": 50, "int": 100, "wis": 100, "cha": 100, "ali": "CN"},
+{"name": "Darkseid", "str": 70, "dex": 60, "con": 70, "int": 50, "wis": 60, "cha": 60, "ali": "LE"},
+{"name": "Galactus", "str": 90, "dex": 50, "con": 80, "int": 60, "wis": 70, "cha": 60, "ali": "N"},
+{"name": "Silver Surfer", "str": 50, "dex": 70, "con": 70, "int": 40, "wis": 40, "cha": 20, "ali": "NG"}
+];
+}else if (textInput.toLowerCase() === "dragonball"){
+   addCharacters = [
+{"name": "Goku", "str": 60, "dex": 100, "con": 90, "int": 20, "wis": 25, "cha": 20, "ali": "NG"},
+{"name": "Vegeta", "str": 55, "dex": 95, "con": 95, "int": 25, "wis": 35, "cha": 20, "ali": "LE"},
+{"name": "Gohan", "str": 40, "dex": 90, "con": 80, "int": 20, "wis": 20, "cha": 18, "ali": "NG"},
+{"name": "Piccolo", "str": 40, "dex": 90, "con": 90, "int": 30, "wis": 30, "cha": 16, "ali": "LN"},
+{"name": "Trunks", "str": 60, "dex": 95, "con": 80, "int": 15, "wis": 15, "cha": 15, "ali": "NG"},
+{"name": "Frieza", "str": 60, "dex": 90, "con": 90, "int": 25, "wis": 25, "cha": 20, "ali": "LE"}
+];
+}
+}
+// Check for duplicates and exclude them
+  for (var i = 0; i < addCharacters.length; i++) {
+    var duplicate = false;
+    for (var j = 0; j < defaultCharacters.length; j++) {
+      if (addCharacters[i].name === defaultCharacters[j].name) {
+        duplicate = true;
+        break;
+      }
+    }
+    if (!duplicate) {
+      characters.push(addCharacters[i]);
+    }
+  }
+
+defaultCharacters=characters.slice();
+setupCharacterStats();
+document.getElementById("textInput").value = "";
+alert('Characters Loaded!');
+}
+    function texts() {
+	
+     introTexts = [
+	 "[player] and [opponent] face off in an epic battle to once and for all prove who is the most powerful",
+     "[player] and [opponent] lock eyes as they prepare to engage in a fierce battle. The air crackles with electricity, and the tension is palpable",
+     "The ground trembles as [player] and [opponent] charge towards each other with reckless abandon. Their clash echoing through the battlefield",
+     "As [player] and [opponent] approach each other, the sky darkens and lightning strikes in the distance. It's clear that this battle will be one for the ages",
+     "With a deafening war cry [player] charges towards [opponent], the sound of battle fills the air as the two combatants face off",
+     "The sun beats down mercilessly as [player] and [opponent] face off in the scorching heat. Sweat drips down their faces as they prepare for battle",
+     "As [player] and [opponent] circle each other warily, the crowd cheers them on. The atmosphere is charged with excitement and anticipation",
+     "The wind picks up as [player] and [opponent] face off on a desolate plain. The only sounds heard is the whistling of the wind",
+     "With a determined look in their eyes, [player] and [opponent] charge towards each other with a fierce intensity. The ground shakes with the force of their impact",
+     "The rain pours down relentlessly as [player] and [opponent] face off in a muddy field. Despite the unfavorable conditions, they remain focused and determined",
+     "As [player] and [opponent] face off, the ground beneath them shakes with the force of their power",
+	 "The air is thick with tension as [player] and [opponent] face each other across the battlefield. They exchange wary glances",
+     "[player] and [opponent] charge towards each other howling and stomping as they get nearer",
+     "As [player] and [opponent] face off, a hush falls over the battlefield. The only sound is the pounding of their hearts as they prepare for the fight of their lives",
+     "With a thunderous roar, [player] and [opponent] charge towards each other. The ground shaking with the force of their impact",
+     "The battlefield is a chaotic whirlwind of dust and debris as [player] and [opponent] clash. They move with incredible speed and skill, each trying to gain the upper hand",
+     "As [player] and [opponent] face off, the sky darkens and ominous clouds gather overhead. It's clear that this is no ordinary battle",
+     "With a fierce determination in their eyes, [player] and [opponent] charge towards each other. They both know that this is a fight to the death, and neither will back down",
+     "As [player] and [opponent] face off, the ground beneath their feet seems to tremble with the weight of their power. It's clear that this battle will be one for the ages",
+     "With a sense of grim determination, [player] and [opponent] square off. They know that this is a battle they cannot afford to lose, and they will do whatever it takes to emerge victorious",
+	 "The ground quakes beneath the feet of [player] and [opponent], as they stare each other down with a fiery determination in their eyes",
+     "With a resounding clash of steel, [player] and [opponent] meet in the heat of battle, neither willing to yield an inch",
+	 "The air crackles with electricity as [player] and [opponent] charge towards each other, their power palpable in the charged atmosphere",
+	 "With a savage snarl, [player] launches themselves at [opponent], their fates intertwined in a brutal struggle for survival",
+	 "The arena erupts into chaos as [player] and [opponent] enter the fray, weapons raised and eyes locked in deadly combat",
+	 "The ground trembles beneath the thunderous charge of [player] and [opponent], their weapons glinting in the sunlight as they collide in a shower of sparks",
+	 "With a primal roar, [player] unleashes their fury upon [opponent], who responds in kind with a vicious ferocity of their own",
+	 "The clash of steel rings out across the battlefield as [player] and [opponent] engage in a brutal exchange, each trying to gain the upper hand",
+	 "With a determined scowl, [player] and [opponent] circle each other warily, sizing each other up for the coming clash",
+	 "The tension is thick as [player] and [opponent] meet in the center of the battlefield, their eyes burning with an unquenchable fire",
+	 "The clash of weapons echoes through the forest as [player] and [opponent] fight with the fury of a thousand storms",
+	 "With a fierce determination in their hearts, [player] and [opponent] charge towards each other, their weapons flashing in the sunlight",
+	 "The battlefield becomes a blur of motion as [player] and [opponent] fight with lightning-fast strikes and deadly precision",
+	 "With a roar of challenge, [player] charges towards [opponent], who meets them with an unbreakable resolve",
+	 "The sky darkens as [player] and [opponent] enter into a deadly struggle, each determined to emerge victorious no matter the cost",
+	 "With a mighty swing of their weapon, [player] unleashes a flurry of blows upon [opponent], who responds with an equally ferocious counterattack",
+	 "The ground shakes with the force of [player] and [opponent]'s blows, each strike sending shockwaves across the battlefield",
+	 "The air is thick with the sound of clashing weapons as [player] and [opponent] engage in a brutal back-and-forth",
+	 "With a fierce battle cry, [player] charges towards [opponent], their heart filled with the unquenchable desire to emerge victorious",
+	 "The crowd watches in awe as [player] and [opponent] clash in a flurry of strikes, their battle a true spectacle to behold"
+
+	 ];
+	  
+	 combatTexts = [
+    "[player] drop kicks [opponent] dealing [damage] damage",
+    "With a mighty swing, [player] strikes [opponent] for [damage] damage",
+    "[player] unleashes a flurry of attacks dealing [damage] damage to [opponent]",
+    "[player] delivers a devastating blow to [opponent] dealing [damage] damage",
+    "In a blur of motion, [player] lands multiple strikes on [opponent] dealing [damage] damage",
+    "[player] lands a heavy hit on [opponent] dealing [damage] damage",
+    "[player] dodges [opponent]'s attack and counterattacks dealing [damage] damage",
+    "[player] grabs [opponent] and slams them to the ground dealing [damage] damage",
+    "In a show of strength, [player] lifts [opponent] and throws them to the ground dealing [damage] damage",
+    "With a deft maneuver, [player] avoids [opponent]'s attack and retaliates dealing [damage] damage",
+    "[player] strikes [opponent] with a flurry of blows dealing [damage] damage",
+    "With a mighty roar, [player] charges at [opponent] dealing [damage] damage",
+    "As [opponent] moves to strike, [player] counters with lightning-fast reflexes dealing [damage] damage",
+    "In a daring move, [player] jumps over [opponent] and strikes them from behind dealing [damage] damage",
+    "[player] unleashes a whirlwind of attacks, striking [opponent] dealing [damage] damage",
+    "With expert precision, [player] lands a perfect hit on [opponent] dealing [damage] damage",
+    "[player] unleashes a devastating attack dealing [damage] damage to [opponent]",
+    "[player] charges up their power and releases a massive strike dealing [damage] damage to [opponent]",
+	"[player] unleashes a barrage of punches on [opponent] dealing [damage] damage",  
+	"[player] tickles [opponent] mercilessly dealing [damage] damage",
+    "[player] charges towards [opponent] launching a massive attack dealing [damage] damage",
+    "[player] swiftly dodges [opponent]'s attack striking back dealing [damage] damage",
+    "[player] jumps behind [opponent] landing a powerful hit and dealing [damage] damage",
+    "[player] lands a forceful hit on [opponent] dealing [damage] damage causing them to stumble backwards",
+    "[player] charges foward their arms raised as they slam [opponent] dealing [damage] damage",
+    "[player] jumps onto [opponent]'s back and delivers a series of powerful blows dealing [damage] damage",
+    "[player] taunts [opponent] with a laugh before unleashing a devastating blow that deals [damage] damage",
+    "[player] sprints around [opponent] attacking from behind dealing [damage] damage with a back attack",
+    "[player] dances around [opponent] and lands a flurry of blows that deal [damage] damage",
+    "[player] delivers a devastating punch that deals [damage] damage to [opponent]",
+    "[player] feints left, then strikes right with a calculated blow that deals [damage] damage to [opponent]",
+    "[player] lands a series of punches and kicks that deal [damage] damage to [opponent]",
+    "[player] jumps onto [opponent]'s shoulders and delivers a crushing blow dealing [damage] damage",
+    "[player] outmaneuvers [opponent], landing a series of strikes that deal [damage] damage",
+    "[player] takes [opponent] down with a swift sweep kick dealing [damage] damage",
+    "[player] counters [opponent]'s attack with a powerful elbow strike dealing [damage] damage",
+    "[player] unleashes a flurry of knee strikes on [opponent] dealing [damage] damage",
+	"[player] lands a spinning backfist on [opponent] dealing [damage] damage",
+	"[player] sidesteps [opponent]'s punch and counters with a powerful uppercut dealing [damage] damage",
+	"[player] uses their superior reach to keep [opponent] at bay, landing strikes 	that deal [damage] damage",
+	"[player] expertly dodges [opponent]'s attacks and delivers a series of counterattacks dealing [damage] damage",
+	"[player] lands a crushing palm strike on [opponent]'s nose dealing [damage] damage",
+	"[player] surprises [opponent] with a sudden tackle dealing [damage] damage taking them to the ground",
+	"[player] blocks [opponent]'s kick and counters with a devastating roundhouse dealing [damage] damage",
+	"[player] lands a powerful strike to [opponent]'s chest dealing [damage] damage causing them to gasp for air",
+	"[player] grabs [opponent]'s arm and twists it behind their back dealing [damage] damage",
+	"[player] uses their agility to evade [opponent]'s strikes and lands a series of counterattacks dealing [damage] damage",
+	"[player] charges at [opponent] and launches a flying kick dealing [damage] damage",
+	"[player] lands a quick jab on [opponent] dealing [damage] damage setting up for a follow-up attack",
+	"[player] surprises [opponent] with a sudden headbutt dealing [damage] damage dazing them momentarily",
+	"[player] grabs [opponent]'s leg and sweeps them off their feet dealing [damage] damage taking them to the ground",
+	"[player] uses their speed to dodge [opponent]'s attacks and lands a series of strikes dealing [damage] damage",
+	"[player] unleashes a powerful body slam on [opponent] dealing [damage] damage causing the ground to shake",
+	"[player] unleashes a flurry of punches on [opponent] dealing [damage] damage",
+	"[player] lands a devastating uppercut on [opponent] dealing [damage] damage sending them reeling",
+	"[player] dodges [opponent]'s attack and lands a spinning back kick dealing [damage] damage",
+	"[player] takes [opponent] down with a judo throw dealing [damage] damage",
+	"[player] lands a solid punch on [opponent]'s jaw dealing [damage] damage",
+	"[player] uses their momentum to body check [opponent] dealing [damage] damage and knocking them to the ground",
+	"[player] surprises [opponent] with a sudden leg sweep dealing [damage] damage",
+	"[player] lands a brutal knee strike on [opponent] dealing [damage] damage knocking the wind out of them",
+	"[player] counters [opponent]'s kick with a lightning-fast side kick dealing [damage] damage",
+	"[player] grabs [opponent]'s arm and twists it into an armbar dealing [damage] damage",
+	"[player] sidesteps [opponent]'s punch and lands a powerful roundhouse dealing [damage] damage",
+	"[player] launches a quick jab followed by a powerful hook dealing [damage] damage to [opponent]",
+	"[player] surprises [opponent] with a sudden headlock dealing [damage] damage causing them to struggle for air",
+	"[player] lands a swift knee strike to [opponent]'s gut dealing [damage] damage knocking them off balance",
+	"[player] uses their speed to dart around [opponent], landing a series of quick strikes that deal [damage] damage",
+	"[player] takes [opponent] down with a powerful leg sweep dealing [damage] damage taking them off their feet"
+		
+  ];
+  
+  combatTextsFinG = [
+  "[player] maneuvers [opponent] into a submission hold, causing them to submit in defeat",
+  "[player] delivers a swift kick to [opponent]'s head, knocking them out cold and ending the battle",
+  "[player] uses targeted attack landing a powerful strike, knocking them out",
+  "[player] uses a targeted punch to the back of the head delivering a fatal blow",
+  "[player] breaks [opponent]'s arms, leaving them unable to continue",
+  "[player] delivers a powerful elbow strike to [opponent], causing them to fall to the ground unconscious",
+  "[player] gains the upperhand and is able to deliver a fatal blow",
+  "[player] slams [opponent] into the ground with a powerful body slam, leaving them unconscious",
+  "[player] delivers a swift and precise kick to [opponent], causing them to crumple to the ground unable to continue",
+  "[player] impales [opponent] through the chest dealing fatal damage",
+  "[player] smashes [opponent]'s skull with a brutal overhead swing dealing fatal damage"
+];
+  
+  combatTextsFin = [
+  "[player] dismembers [opponent] with a flurry of vicious strikes dealing fatal damage",
+  "[player] crushes [opponent]'s spine with a bone-shattering blow dealing fatal damage",
+  "[player] sends [opponent] plummeting into the abyss never to be seen again",
+  "[player] crushes [opponent]'s skull with a single blow killing them instantly",
+  "[player] breaks [opponent]'s spine with a massive body slam ending the battle",
+  "[player] crushes [opponent]'s skull with a swift strike ending the battle for good",
+  "[player] shatters [opponent]'s body with a full force body slam, dealing fatal damage",
+  "[player] shatters [opponent]'s spine with a roundhouse kick dealing fatal damage",
+  "[player] smashes [opponent]'s face into the ground with tremendous force dealing fatal damage",
+  "[player] slams [opponent]'s head repeatedly into the ground causing fatal damage",
+  "[player] crushes [opponent]'s chest with a crushing bear hug, causing fatal damage"
+];
+
+  combatTextsFinC = [///C Chaotic End 
+  "[player] tears [opponent]'s throat out with their teeth dealing fatal damage",
+  "[player] impales [opponent] on mangled debris dealing fatal damage and leaving them to bleed out",
+  "[player] breaks [opponent]'s neck with a sharp twist instantly killing them",
+  "[player] gouges out [opponent]'s eyes with their fingers causing fatal damage",
+  "[player] crushes [opponent]'s windpipe with a brutal squeeze then watches them suffocate",
+  "[player] severs [opponent]'s spine with a tremendous kick dealing fatal damage",
+  "[player] smashes [opponent]'s face into the ground with tremendous force dealing fatal damage",
+  "[player] tears [opponent]'s limbs off with raw strength causing fatal damage",
+  "[player] slams [opponent]'s head repeatedly into the ground causing fatal damage",
+  "[player] rips [opponent]'s head off with a morbid twist and then a sudden jerk instantly killing them",
+  "[player] crushes [opponent]'s chest with a crushing bear hug, causing fatal damage"
+];
+
+    combatTextsDoubleTie = [
+    "Both [player] and [opponent] begin to tire, deciding to go each their seperate ways",
+    "With very little progress being made [player] and [opponent] decide to end the battle",    
+	"Nearly dieing of boredom both [player] and [opponent] depart ways",
+	"[player] and [opponent] nod respectfuly to each other, and depart ways unscathed",
+	"As equals in combat, [player] and [opponent] wave each other off to fight another day"
+]
+
+    combatTextsDoubleFin = [
+    "[player] and [player2] clash, both suffering fatal wounds",
+    "In a desperate final attack [player] and [player2] mortally wound each other",
+    "[player] and [player2] deal each other fatal blows",
+    "In a fierce exchange [player] and [player2] both meet their demise",
+    "The battle takes its toll on, [player] and [player2], who both fall in combat",
+    "[player] and [player2] deal mortal blows to each other",
+    "As they trade fatal blows [player] and [player2] fall to the ground",
+    "[player] and [player2] both fall in combat, having dealt deadly wounds to each other",
+    "With one final strike [player] and [player2] deal each other fatal blows",
+    "In their final moments [player] and [player2] trade deadly strikes",
+    "In a final, desperate move, [player] and [player2] strike each other simultaneously dealing fatal blows",
+    "[player] and [player2] trade fatal blows, both falling to the ground",
+    "[player] and [player2] collide, each having dealt fatal blows",
+    "In a last ditch effort [player] and [player2] deliver simultaneous deathblows",
+    "The battle ends in a gruesome tie as [player] and [player2] both fall lifeless",
+    "[player] and [player2] are both mortally wounded and walk off to die"
+
+];
+}
+    function setupCharacterStats() {
+  select1 = document.getElementById("character1");
+  select2 = document.getElementById("character2");
+  selectedIndex1 = select1.selectedIndex;
+  selectedIndex2 = select2.selectedIndex;
+  
+  select1.innerHTML = "";//??
+  select2.innerHTML = "";//??
+
+  for (var i = 0; i < characters.length; i++) {
+    // Create option elements for each character
+    option1 = document.createElement("option");
+    option2 = document.createElement("option");
+
+    // Modify the numeric attributes of the character object with random values
+    var character = characters[i];
+    for (var key in character) {
+      if (!isNaN(character[key])) {
+        var totalVal = parseInt(character[key]);
+        var percentageChange = (Math.floor(Math.random() * 9) - 4) / 100;
+        var newVal = Math.round(totalVal * (1 + percentageChange));
+        character[key] = parseInt(newVal.toString());
+      }
+    }
+
+    // Set the option values and text to the character name
+    option1.value = character.name;
+    option1.text = character.name;
+    option2.value = character.name;
+    option2.text = character.name;
+
+    // Add the options to the select elements
+    select1.add(option1);
+    select2.add(option2);
+  }
+
+  select1.selectedIndex = selectedIndex1;
+  select2.selectedIndex = selectedIndex2;
+  
+}
+    function startFight() {
+	var randomIndex;
+    var combatText;
+    var skillText1;
+    var skillText2;	
+  character1 = characters.find(c => c.name === document.getElementById("character1").value);
+  character2 = characters.find(c => c.name === document.getElementById("character2").value);
+if (!character1 || !character2) { // make sure both characters are selected before starting the fight
+  alert("Please select two characters to start the fight!");
+  document.getElementById("fight-button").disabled = false;
+  return;
+}
+
+player1Image.src="./images/"+character1.name+".jpg";
+player2Image.src="./images/"+character2.name+".jpg";
+
+resetTr = false;
+document.getElementById("reset-button").disabled = false;
+document.getElementById("load-button").disabled = true;
+document.getElementById("fight-button").disabled =true;
+document.getElementById("character1").disabled = true;
+document.getElementById("character2").disabled = true;
+
+
+result += "<p><H1><b><span style=\"color: orange;\">" + character1.name + " (" + character1.ali + ") vs. " + character2.name + " (" + character2.ali + ")</span></H1></p>";
+
+//intro text
+randomIndex = Math.floor(Math.random() * introTexts.length);
+introText = introTexts[randomIndex];
+result += "<H2><span style=\"color: silver;\">" + introText.replace("[player]", "<b>" + character1.name + "</b>")
+                       .replace("[opponent]", "<b>" + character2.name + "</b>");
+					   result += ".</span></H2>";
+				   
+statCalculate();//new skill
+ character2.health = healthMax2;
+ character1.health = healthMax1;
+document.getElementById("battle-result").innerHTML = result;
+result += "<p><span style=\"color: white;\"><H3>Round " + round + "</H3></span></p>";
+
+interval = setTimeout(function() {
+round ++;
+updateSkillStats();
+statCalculate();
+var result = document.getElementById("battle-result").innerHTML;
+result += "<p><span style=\"color: white;\"><H3>Round " + round + "</H3></span></p>";
+var character1 = characters.find(c => c.name === document.getElementById("character1").value);
+var character2 = characters.find(c => c.name === document.getElementById("character2").value);
+
+//start of battle sequence
+var randomIndex1 = Math.max(2, Math.floor(Math.random() * defaultSkillList.length));
+while ((defaultSkillList[randomIndex1].users.includes(character1.name) || defaultSkillList[randomIndex1].users.toLowerCase() === "any") === false) {
+  randomIndex1 = Math.floor(Math.max(0, Math.random() * defaultSkillList.length));
+}
+var randomIndex2 = Math.max(2, Math.floor(Math.random() * defaultSkillList.length));
+while ((defaultSkillList[randomIndex2].users.includes(character2.name) || defaultSkillList[randomIndex2].users.toLowerCase() === "any") === false) {
+  randomIndex2 = Math.floor(Math.max(0, Math.random() * defaultSkillList.length));
+}
+
+if (Math.random() < 0.55 && stunDuration1 < 1){
+var dps1 = Math.floor(Math.max(0,Math.random() * character1.force, (((character1.strength + character1.dexterity) * 0.5) -  character2.defense)));
+var bps1 = Math.floor(Math.max(0,Math.random() * ((character1.reflexes - character2.anticipation))));
+if (dps1>bps1){var damage1=dps1;var bonusDamage1=bps1;}else{var damage1=bps1;var bonusDamage1=dps1;}
+}else{
+var damage1 = 0; var bonusDamage1 = 0;
+if (stunDuration1 < 1   && (damage1 + bonusDamage1)<1) {///Perform SKILL player 1
+var skillText1 = addReadSkills(defaultSkillList[randomIndex1], 1);////////////////Player 1 skill list reader and stat updater
+result += "<p><H3><span style=\"color: hotPink;\">" + skillText1.replace("[player]", "<b>" + character1.name + "</b>")
+                    .replace("[opponent]", "<b>" + character2.name + "</b>")
+                    .replace("[damage]", "<b>" + character2Debuffs.damage + "</b>") + "</span></H3></p>";
+										character2.health -= character2Debuffs.damage;
+}else{
+result += "<p><H3><span style=\"color: pink;\">" +character1.name+" is ignoring the fight or is unable to attack.</span></H3></p>";
+  }
+}
+if (Math.random() < 0.55 && stunDuration2 < 1){
+var dps2 = Math.floor(Math.max(0,Math.random() * character2.force, (((character2.strength + character2.dexterity) * 0.5) -  character1.defense)));
+var bps2 = Math.floor(Math.max(0,Math.random() * ((character2.reflexes - character1.anticipation))));
+if (dps2>bps2){var damage2=dps2;var bonusDamage2=bps2;}else{var damage2=bps2;var bonusDamage2=dps2;}
+}else{
+var damage2 = 0; var bonusDamage2 = 0;
+if (stunDuration2 < 1  && (damage2 + bonusDamage2) < 1 ){///Perform SKILL player 2
+
+var skillText2 = addReadSkills(defaultSkillList[randomIndex2], 2);////////////////Player 2 skill list reader and stat updater
+result += "<p><H3><span style=\"color: royalBlue;\">" + skillText2.replace("[player]", "<b>" + character2.name + "</b>")
+                    .replace("[opponent]", "<b>" + character1.name + "</b>")
+                    .replace("[damage]", "<b>" + character1Debuffs.damage + "</b>")+"</span></H3></p>";
+										character1.health -= character1Debuffs.damage;
+}else{
+result += "<p><H3><span style=\"color: skyBlue ;\">" +character2.name+" is ignoring the fight or is unable to attack.</span></H3></p>";
+  }
+}
+
+var dodge1 = Math.floor(Math.max(Math.random() * (Math.max(0, character1.dexterity - character2.reflexes))));
+var dodge2 = Math.floor(Math.max(Math.random() * (Math.max(0, character2.dexterity - character1.reflexes))));
+var resistance1 = Math.floor(Math.max(0, Math.random() * (Math.max(0, character1.resistance - ((character2.endurance + character2.willpower) * 0.5)))));
+var resistance2 = Math.floor(Math.max(0, Math.random() * (Math.max(0, character2.resistance - ((character1.endurance + character1.willpower) * 0.5)))));
+
+character1.health -= Math.max(0, (damage2 + bonusDamage2 - resistance1 - dodge1));
+character2.health -= Math.max(0, (damage1 + bonusDamage1 - resistance2 - dodge2));
+
+
+if ((damage1 + bonusDamage1 > 0 ) && (character1.health > 0)){
+  if (character2.health > 0) { //&& character2Debuffs.damage < 1
+    var randomIndex = Math.floor(Math.random() * combatTexts.length);
+    var combatText = combatTexts[randomIndex];
+    result += "<p><span style=\"color: pink;\">" + combatText
+              .replace("[player]", "<b>" + character1.name + "</b>")
+              .replace("[opponent]", "<b>" + character2.name + "</b>")
+              .replace("[damage]", "<b>" + damage1 + "</b>") + "</span>";
+  } 
+}
+  if (character2.health < 1 && character1.health > 0) {//else
+    var randomIndex = Math.floor(Math.random() * combatTextsFin.length);
+    var combatTextFin = combatTextsFin[randomIndex];
+	///new combat text fin based character 1 alignment
+if (Math.random() < 0.75){
+	if (character1.ali.includes("C")){combatTextFin = combatTextsFinC[randomIndex];}
+	else if (character1.ali.includes("G") ){combatTextFin = combatTextsFinG[randomIndex];}
+}
+    result += "<H3><span style=\"color: DeepPink;\">" + combatTextFin
+              .replace("[player]", "<b>" + character1.name + "</b>")
+              .replace("[opponent]", "<b>" + character2.name + "</b>")
+              .replace("[damage]", "<b>" + damage1 + "</b>") + ".</span></H3>";
+  }//else{result += character1.name+" failed to act in time.";}
+
+
+if (character2.health > 0 && character1.health > 0 && character2Debuffs.damage < 1) {//
+  if (bonusDamage1 > 0) {
+    result += "<span style=\"color: pink;\"> and also dealing an additional <b>" + bonusDamage1 + "</b> "+ getBonusString()+" damage</span>";
+  }
+
+  if (stunDuration2 < 1 && damage1 + bonusDamage1>0 ) {
+    if ( dodge2+resistance2 >= damage1 + bonusDamage1) {
+      result += "<span style=\"color: RoyalBlue;\">" + getJoinString() + " <b>" + character2.name + "</b> dodges all the damage"; //parried = true;
+    } else if (dodge2 > 0 && dodge2 + resistance2 > 0) {
+      result += "<span style=\"color: RoyalBlue;\">" + getJoinString() + " <b>" + character2.name + "</b> parries " + (dodge2+resistance2) + "";
+    } else if (resistance2 > 0) {
+      result += "<span style=\"color: RoyalBlue;\">" + getJoinString() + " <b>" + character2.name + "</b> resists " + resistance2 + "";
+    }
+  }
+}result += "</span></p>";
+if ((damage2 + bonusDamage2 > 0 ) && (character2.health > 0)){
+  if (character1.health > 0 ) {//&& character1Debuffs.damage < 1
+    var randomIndex = Math.floor(Math.random() * combatTexts.length);
+    var combatText = combatTexts[randomIndex];
+    result += "<p><span style=\"color: SkyBlue;\">" + combatText
+              .replace("[player]", "<b>" + character2.name + "</b>")
+              .replace("[opponent]", "<b>" + character1.name + "</b>")
+              .replace("[damage]", "<b>" + damage2 + "</b>") + "</span>";
+  } 
+} 
+   if (character1.health < 1 && character2.health > 0) {//else
+    var randomIndex = Math.floor(Math.random() * combatTextsFin.length);
+    var combatTextFin = combatTextsFin[randomIndex];		
+	///new combat text fin based character 1 alignment
+if (Math.random() < 0.75){
+	if (character2.ali.includes("C")){combatTextFin = combatTextsFinC[randomIndex];}
+	else if (character2.ali.includes("G") ){combatTextFin = combatTextsFinG[randomIndex];}
+}	
+    result += "<H3><span style=\"color: MediumSlateBlue;\">" + combatTextFin
+              .replace("[player]", "<b>" + character2.name + "</b>")
+              .replace("[opponent]", "<b>" + character1.name + "</b>")
+              .replace("[damage]", "<b>" + damage2 + "</b>") + ".</span></H3>";
+  }///else{result += character2.name+" failed to act in time.";}
+
+
+if (character2.health > 0 && character1.health > 0 && character1Debuffs.damage < 1) {//
+  if (bonusDamage2 > 0) {
+    result += "<span style=\"color: SkyBlue;\">" + " and also dealing an additional <b>" + bonusDamage2 + "</b> "+ getBonusString()+" damage</span>";
+  }
+
+  if (stunDuration1 < 1  && damage2 + bonusDamage2>0 ) {
+    if (dodge1+resistance1 >= damage2 + bonusDamage2) {
+      result += "<span style=\"color: HotPink;\">" + getJoinString() + " <b>" + character1.name + "</b> dodges all the damage"; //parried = true;
+    } else if (dodge1 > 0 && dodge1 + resistance1 > 0) {
+      result += "<span style=\"color: HotPink;\">" + getJoinString() + " <b>" + character1.name + "</b> parries " + (dodge1+resistance1) + "";
+    } else if (resistance1 > 0) {
+      result += "<span style=\"color: HotPink;\">" + getJoinString() + " <b>" + character1.name + "</b> resists " + resistance1 + "";
+    }
+  }
+}
+
+result += "</span></p>";
+
+if (character2.health <= 0 && character1.health <= 0) {//double death
+
+randomIndex = Math.floor(Math.random() * combatTextsDoubleFin.length);
+combatTextDoubleFin = combatTextsDoubleFin[randomIndex];
+result += "<p><H3><span style=\"color: Fuchsia;\">" + combatTextDoubleFin.replace("[player]", "<b>" + character1.name + "</b>")
+                       .replace("[player2]", "<b>" + character2.name + "</b>");
+					   result += ".</span></H3>";
+
+}else if (round >maxRounds){
+randomIndex = Math.floor(Math.random() * combatTextsDoubleTie.length);
+combatTextDoubleTie = combatTextsDoubleTie[randomIndex];
+result += "<H3><span style=\"color: Silver;\">" + combatTextDoubleTie.replace("[player]", "<b>" + character1.name + "</b>")
+                       .replace("[opponent]", "<b>" + character2.name + "</b>");
+					   result += ".</span></H3>";
+}
+
+  result += "</p>";
+ var reg1 = Math.max(0, Math.floor(character1Buffs.buffhea - character1Debuffs.debuffhea));
+ var reg2 = Math.max(0, Math.floor(character2Buffs.buffhea - character2Debuffs.debuffhea));
+  
+//   DeepPink , MediumSlateBlue          Pink , SkyBlue          HotPink , RoyalBlue        str,dex,con,int,wis,cha,hea,res,for,mag,def,end,wil,ant,ref,rec
+character1Stats = "<H2><span style=\"color: DeepPink;\"><b>" + character1.name + "'s   Stats</b>&emsp;&emsp; Health: " + character1.health  + " / "+ healthMax1 + "</span></H2><span style=\"color: Pink;\">Strength: " + character1.strength + ", Dexterity: " + character1.dexterity + ", Constitution: " + character1.constitution + ", Intelligence: " + character1.intelligence + ", Wisdom: " + character1.wisdom + ", Charisma: " + character1.charisma + "</span><span style=\"color: HotPink;\"><br>Magic: " + character1.magic + ", Force: " + character1.force + ", Armor: " + character1.defense + ", Resistance: " + character1.resistance + ", Reflexes: " + character1.reflexes + ", Recovery: " + character1.recovery + ", Anticipation: " + character1.anticipation + ", Willpower: " + character1.willpower + ", Endurance: " + character1.endurance + ", Regeneration: " + reg1 +  ", Buff-Duration: "+buffDuration1 + ", Debuff-Duration: "+debuffDuration1 + ", Stunned-Duration: "+stunDuration1 +"</span>";
+
+character2Stats = "<H2><span style=\"color: MediumSlateBlue;\"><b>" + character2.name + "'s   Stats</b>&emsp;&emsp; Health: " + character2.health + " / "+ healthMax2+"</b></span></H2> <span style=\"color: SkyBlue;\">Strength: " + character2.strength + ", Dexterity: " + character2.dexterity + ", Constitution: " + character2.constitution + ", Intelligence: " + character2.intelligence + ", Wisdom: " + character2.wisdom + ", Charisma: " + character2.charisma + "</span><span style=\"color: RoyalBlue;\"><br>Magic: " + character2.magic+ ", Force: " + character2.force + ", Armor: " + character2.defense + ", Resistance: " + character2.resistance + ", Reflexes: " + character2.reflexes + ", Recovery: " + character2.recovery + ", Anticipation: " + character2.anticipation + ", Willpower: " + character2.willpower + ", Endurance: " + character2.endurance + ", Regeneration: " + reg2 + ", Buff-Duration: "+buffDuration2 + ", Debuff-Duration: "+debuffDuration2 + ", Stunned-Duration: "+stunDuration2 +"</span>";
+
+
+document.getElementById("stats-container").innerHTML = "<h4>" + character1Stats + "<br>" + character2Stats + "</h4>";
+
+if (character1.health <= 0  && character2.health <= 0) {//death tie
+  clearInterval(interval);
+  gameStop = true;
+  result += "<p><H2><b>Both Characters Have Died! </b></H2></p>";
+  document.getElementById("winner-container").innerHTML = "<p><H2><b>Both Characters Have Died! </b></H2></p>";
+  document.getElementById("battle-result").innerHTML = result;
+  document.getElementById("battle-result").scrollIntoView(false);
+    if (AUTO){reset();}
+  return;
+}else if (character1.health <= 0) {
+  clearInterval(interval);
+  gameStop = true;
+  result += "<p><H2><b>" + character2.name + "</b> wins!</H2></p>";
+  document.getElementById("winner-container").innerHTML ="<H1><b>" + character2.name + "</b> wins the battle after "+round+" rounds!</H1>";
+  document.getElementById("battle-result").innerHTML = result;
+  document.getElementById("battle-result").scrollIntoView(false);
+    if (AUTO){reset();}
+  return;
+}else if (character2.health <= 0) {
+  clearInterval(interval);
+  gameStop = true;
+  result += "<p><H2><b>" + character1.name + "</b> wins!</H2></p>";
+  document.getElementById("winner-container").innerHTML ="<H1><b>" + character1.name + "</b> wins the battle after "+round+" rounds!</H1>";
+  document.getElementById("battle-result").innerHTML = result;
+  document.getElementById("battle-result").scrollIntoView(false);
+    if (AUTO){reset();}
+  return;
+}else if (round > maxRounds) {//time tie
+  clearInterval(interval);
+  gameStop = true;
+  result += "<p><H2>After "+round+" rounds the battle has ended in a <b>Stalemate</b>!</H2></p>";
+  document.getElementById("winner-container").innerHTML ="<p>After "+round+" rounds the battle has ended in a <b>Stalemate</b>!</p>";
+  document.getElementById("battle-result").innerHTML = result;
+  document.getElementById("battle-result").scrollIntoView(false);
+    if (AUTO){reset();}
+  return;
+}else if (resetTr) {
+reset();  
+return;
+}
+
+document.getElementById("battle-result").innerHTML = result;
+document.getElementById("battle-result").scrollIntoView(false);
+setTimeout(arguments.callee, delayTime);
+updateProgress(delayTime);
+}, delayTime);
+}//end of function
+    function reset() {
+
+document.getElementById("fight-button").disabled = false;
+document.getElementById("load-button").disabled = false;
+document.getElementById("character1").disabled = false;
+document.getElementById("character2").disabled = false;
+document.getElementById("stats-container").innerHTML = "";
+document.getElementById("winner-container").innerHTML = "";
+document.getElementById("battle-result").innerHTML = "";
+document.getElementById("slider").value = Math.floor( (5050 - delayTime) / 50)
+	  result = "";
+      round = 0;
+	  resetTr = false;
+	  gameStop = false;
+	  stunDuration1 = 0;
+	  stunDuration2 = 0;
+	  buffDuration1 = 0;
+	  debbuffDuration1 = 0;
+	  buffDuration2 = 0;
+	  debbuffDuration2 = 0;
+	  resetSkills(3);
+	  updateSkillStats();
+	  setupCharacterStats();//reroll the stats
+	  player1Image.src = "./images/Default.jpg";
+      player2Image.src = "./images/Default.jpg";
+	  ///add random character mode..
+	  if (AUTO) {startFight();}
+}
+    function checkReset() {
+if (gameStop){reset();}
+
+}
+    function getBonusString() {
+        var options = ["critical", "glancing", "splash", "bonus","bleed","physical", "blunt" ];
+       return  ""+options[Math.floor(Math.random() * options.length)];
+}
+    function getJoinString() {
+        var optionsj = [" however", " but", " though"," while"]; //and",
+       return  ""+optionsj[Math.floor(Math.random() * optionsj.length)];
+}
+	function updateProgress(delayTime) {
+  // Set the start time
+  var startTime = Date.now();
+
+  // Define the function to be called periodically during the delay
+  var updateProgress = function() {
+    // Calculate the elapsed time
+    var elapsedTime = Date.now() - startTime;
+
+    // Update the progress bar with the current progress
+    document.getElementById("progress-bar").value = Math.max(0, Math.floor((elapsedTime / delayTime) * 100));
+
+    // Check if the delay is complete
+    if (elapsedTime >= delayTime) {
+      // Do something when the delay is complete
+      console.log("Delay complete!");
+    } else {
+      // Call this function again after a short delay
+      setTimeout(updateProgress, 50);
+    }
+  };
+
+  // Call the updateProgress function to start the delay
+  updateProgress();
+}	
+	function generateSkill() {
+var skillProperty = { };
+
+var skill = document.getElementById("skill").value;
+var users = document.getElementById("users").value;
+var text = document.getElementById("text").value;
+var buffstr = parseInt(document.getElementById("buffstr").value);
+var buffdex = parseInt(document.getElementById("buffdex").value);
+var buffcon = parseInt(document.getElementById("buffcon").value);
+var buffint = parseInt(document.getElementById("buffint").value);
+var buffwis = parseInt(document.getElementById("buffwis").value);
+var buffcha = parseInt(document.getElementById("buffcha").value);
+var buffhea = parseInt(document.getElementById("buffhea").value);
+var buffres = parseInt(document.getElementById("buffres").value);
+var bufffor = parseInt(document.getElementById("bufffor").value);
+var buffmag = parseInt(document.getElementById("buffmag").value);
+var buffdef = parseInt(document.getElementById("buffdef").value);
+var buffend = parseInt(document.getElementById("buffend").value);
+var buffwil = parseInt(document.getElementById("buffwil").value);
+var buffant = parseInt(document.getElementById("buffant").value);
+var buffref = parseInt(document.getElementById("buffref").value);
+var buffrec = parseInt(document.getElementById("buffrec").value);
+var debuffstr = parseInt(document.getElementById("debuffstr").value);
+var debuffdex = parseInt(document.getElementById("debuffdex").value);
+var debuffcon = parseInt(document.getElementById("debuffcon").value);
+var debuffint = parseInt(document.getElementById("debuffint").value);
+var debuffwis = parseInt(document.getElementById("debuffwis").value);
+var debuffcha = parseInt(document.getElementById("debuffcha").value);
+var debuffhea = parseInt(document.getElementById("debuffhea").value);
+var debuffres = parseInt(document.getElementById("debuffres").value);
+var debufffor = parseInt(document.getElementById("debufffor").value);
+var debuffmag = parseInt(document.getElementById("debuffmag").value);
+var debuffdef = parseInt(document.getElementById("debuffdef").value);
+var debuffend = parseInt(document.getElementById("debuffend").value);
+var debuffwil = parseInt(document.getElementById("debuffwil").value);
+var debuffant = parseInt(document.getElementById("debuffant").value);
+var debuffref = parseInt(document.getElementById("debuffref").value);
+var debuffrec = parseInt(document.getElementById("debuffrec").value);
+var buffdur = parseInt(document.getElementById("buffdur").value);
+var debuffdur = parseInt(document.getElementById("debuffdur").value);
+var stundur = parseInt(document.getElementById("stundur").value);
+var damage = parseInt(document.getElementById("damage").value);
+
+
+skillProperty = {
+    "name": skill,    "users": users,    "text": text,    "buffstr": buffstr,    "buffdex": buffdex,    "buffcon": buffcon,    "buffint": buffint,    "buffwis": buffwis,    "buffcha": buffcha,    "buffhea": buffhea,    "buffres": buffres,    "bufffor": bufffor,    "buffmag": buffmag,    "buffdef": buffdef,    "buffend": buffend,    "buffwil": buffwil,    "buffant": buffant,    "buffref": buffref,    "buffrec": buffrec,    "debuffstr": debuffstr,    "debuffdex": debuffdex,    "debuffcon": debuffcon,    "debuffint": debuffint,    "debuffwis": debuffwis,    "debuffcha": debuffcha,    "debuffhea": debuffhea,    "debuffres": debuffres,    "debufffor": debufffor,    "debuffmag": debuffmag,    "debuffdef": debuffdef,    "debuffend": debuffend,    "debuffwil": debuffwil,    "debuffant": debuffant,    "debuffref": debuffref,    "debuffrec": debuffrec,    "buffdur": buffdur,    "debuffdur": debuffdur,    "stundur": stundur,    "damage": damage
+	};
+
+defaultSkillList.push(skillProperty);
+
+alert("Skill added!.");
+const output = JSON.stringify(skillProperty);
+document.getElementById("output").innerHTML = output;
+const element = document.getElementById("output");
+const range = document.createRange();
+range.selectNodeContents(element);
+const selection = window.getSelection();
+selection.removeAllRanges();
+selection.addRange(range);
+
+}
+    function rollStats() {
+        document.getElementById("str").value = Math.floor(Math.random() * 16) + 3;
+        document.getElementById("dex").value = Math.floor(Math.random() * 16) + 3;
+        document.getElementById("con").value = Math.floor(Math.random() * 16) + 3;
+        document.getElementById("int").value = Math.floor(Math.random() * 16) + 3;
+        document.getElementById("wis").value = Math.floor(Math.random() * 16) + 3;
+        document.getElementById("cha").value = Math.floor(Math.random() * 16) + 3;
+		//roll alignment and name too
+		document.getElementById("chname").value = getName(1);
+		  var alignmentSelect = document.getElementById("ali");
+  var options = alignmentSelect.options;
+  var randomIndex = Math.floor(Math.random() * options.length);
+  document.getElementById("ali").value = options[randomIndex].value;
+      }
+ 	function updateCharacterSave() {
+	//updates the characetr builder string everytimg the player pushes a button or clicks a field
+	rawTextInput = JSON.stringify({
+    name: document.getElementById("chname").value,
+    str: document.getElementById("str").value,
+    dex: document.getElementById("dex").value,
+    con: document.getElementById("con").value,
+    int: document.getElementById("int").value,
+    wis: document.getElementById("wis").value,
+    cha: document.getElementById("cha").value,
+    ali: document.getElementById("ali").value
+	  });
+	  document.getElementById("saveBtn").value = rawTextInput;
+	}
+	function saveCharacter() {
+  document.getElementById("textInput").value = rawTextInput;
+alert(rawTextInput+"    - character json string copied to text field in Battle Mode!");//remove and switch to adding to a list
+      }
+    function getName(chartype) {
+  var r = "zilch";
+  if (chartype == 1) {
+    var randomFirstNames = ["Aria", "Briar", "Cassia", "Dahlia", "Elara", "Fae", "Gwen", "Hazel", "Iris", "Jasmine", "Kaida", "Lilith", "Maeve", "Niamh", "Ophelia", "Persephone"//, "Quinn", "Raven", "Seraphina", "Tahlia", "Ursula", "Vesper", "Willow", "Xanthe", "Yara", "Zahara", "Aurora", "Brynja", "Calliope", "Diana", "Aelwyn", "Baela", "Celandine", "Darya", "Eirlys", "Fiora", "Ginevra", "Hestia", "Isadora", "Jorah", "Kaelin", "Lirelle", "Mara", "Naida", "Orinthea", "Pandora", "Quinella", "Rhiannon", "Sarai", "Thalia", "Umbrielle", "Vespera", "Wylda", "Xylara", "Ysabel", "Zinnia", "Astrid", "Belladonna", "Ceridwen", "Dariana", "Eldrida", "Ferelith", "Galadriel", "Halia", "Illyria", "Jaela", "Kaida", "Liliosa", "Maelle", "Nerissa", "Oriana", "Perrin", "Qadira", "Ravena", "Sapphira", "Tahlarien", "Undine", "Vaela", "Wynne", "Xandria", "Yseult", "Zafira", "Avalon", "Brienne", "Celestia", "Daxia", "Elvina", "Fawna", "Gwyneth", "Helena", "Iona", "Jocasta", "Kaida", "Luminara", "Morgana", "Nimue", "Ophira", "Pryderi", "Quirina", "Rosabelle", "Sarissa", "Tallulah", "Ursulette", "Valora", "Wynonna", "Xenia", "Ygraine", "Zephyrine", "Adira", "Brisa", "Clio", "Diamanda", "Evelina", "Fauna", "Gineva", "Hazelia", "Iridessa", "Jordana", "Kaliyah", "Lirien", "Marisol", "Nivara", "Ondine", "Pyrrha", "Quetzal", "Roisin", "Sariel", "Talitha", "Uriela", "Varelia", "Wisteria", "Xylia", "Yseulte", "Zada", "Amaris", "Bryony", "Camellia", "Delphine", "Eira", "Fenrisa", "Gwenaelle", "Hespera", "Ismene", "Jaida", "Kaida", "Lysandra", "Meliora", "Nayeli", "Orianna", "Phaedra", "Quilla", "Rowena", "Sarafina", "Talisa"
+	];
+    var randomIndex = Math.floor(Math.random() * randomFirstNames.length);
+    r = randomFirstNames[randomIndex];
+  }
+  return r;
+}	
+	function updateSkillStats() {
+	var buffedHealth = 0;
+	character1Debuffs.damage=0;
+	character2Debuffs.damage=0;
+				if (stunDuration1 >0){stunDuration1 --;if (character1.willpower+character1.recovery > (Math.random() * (character2.willpower + character2.endurance))){stunDuration1 = 0;}}
+				if (stunDuration2 >0){stunDuration2 --;if (character2.willpower+character2.recovery > (Math.random() * (character1.willpower + character1.endurance))){stunDuration2 = 0;}}
+if (buffDuration1 >0){buffDuration1 --;}
+		        else{
+character1Buffs = { buffstr: 0, buffdex: 0, buffcon: 0, buffint: 0, buffwis: 0, buffcha: 0, buffhea: 0, buffres: 0, bufffor: 0,  buffmag: 0, buffdef: 0, buffend: 0, buffwil: 0, buffant: 0, buffref: 0, buffrec: 0, buffdur: 0};
+	}
+		if (debuffDuration1 >0){debuffDuration1 --;}
+				else{
+character1Debuffs = { debuffstr: 0, debuffdex: 0, debuffcon: 0, debuffint: 0, debuffwis: 0, debuffcha: 0, debuffhea: 0, debuffres: 0, debufffor: 0, debuffmag: 0, debuffdef: 0, debuffend: 0, debuffwil: 0, debuffant: 0, debuffref: 0, debuffrec: 0, debuffdur: 0};
+	}
+	
+		if (buffDuration2 >0){buffDuration2 --;}
+		        else{
+character2Buffs = { buffstr: 0, buffdex: 0, buffcon: 0, buffint: 0, buffwis: 0, buffcha: 0, buffhea: 0, buffres: 0, bufffor: 0,  buffmag: 0, buffdef: 0, buffend: 0, buffwil: 0, buffant: 0, buffref: 0, buffrec: 0, buffdur: 0};
+	}
+		if (debuffDuration2 >0){debuffDuration2 --;}
+				else{
+character2Debuffs = { debuffstr: 0, debuffdex: 0, debuffcon: 0, debuffint: 0, debuffwis: 0, debuffcha: 0, debuffhea: 0, debuffres: 0, debufffor: 0, debuffmag: 0, debuffdef: 0, debuffend: 0, debuffwil: 0, debuffant: 0, debuffref: 0, debuffrec: 0, debuffdur: 0};
+	}
+// auto heal
+if (character1Buffs.buffhea - character1Debuffs.debuffhea > 0) {
+  buffedHealth = Math.floor(0, Math.max(0,character1Buffs.buffhea - character1Debuffs.debuffhea));
+  let randomModifier = Math.random() * 0.2 - 0.1; // range: -0.1 to +0.1
+  buffedHealth *= 1 + randomModifier;
+  character1.health += Math.floor(Math.max(0, buffedHealth));
+}
+
+if (character2Buffs.buffhea - character2Debuffs.debuffhea > 0) {
+  buffedHealth = Math.floor(0, Math.max(0,character2Buffs.buffhea - character2Debuffs.debuffhea));
+  let randomModifier = Math.random() * 0.2 - 0.1; // range: -0.1 to +0.1
+  buffedHealth *= 1 + randomModifier;
+  character2.health += Math.floor(Math.max(0, buffedHealth));
+}
+
+
+}
+    function resetSkills(type) {
+if (type === 1  || type === 3){
+character1Buffs = { buffstr: 0, buffdex: 0, buffcon: 0, buffint: 0, buffwis: 0, buffcha: 0, buffhea: 0, buffres: 0, bufffor: 0,  buffmag: 0, buffdef: 0, buffend: 0, buffwil: 0, buffant: 0, buffref: 0, buffrec: 0, buffdur: 0};
+character1Debuffs = { debuffstr: 0, debuffdex: 0, debuffcon: 0, debuffint: 0, debuffwis: 0, debuffcha: 0, debuffhea: 0, debuffres: 0, debufffor: 0, debuffmag: 0, debuffdef: 0, debuffend: 0, debuffwil: 0, debuffant: 0, debuffref: 0, debuffrec: 0, debuffdur: 0, damage: 0};
+}
+if (type === 2 || type === 3){
+character2Buffs = { buffstr: 0, buffdex: 0, buffcon: 0, buffint: 0, buffwis: 0, buffcha: 0, buffhea: 0, buffres: 0, bufffor: 0,  buffmag: 0, buffdef: 0, buffend: 0, buffwil: 0, buffant: 0, buffref: 0, buffrec: 0, buffdur: 0};
+character2Debuffs = { debuffstr: 0, debuffdex: 0, debuffcon: 0, debuffint: 0, debuffwis: 0, debuffcha: 0, debuffhea: 0, debuffres: 0, debufffor: 0, debuffmag: 0, debuffdef: 0, debuffend: 0, debuffwil: 0, debuffant: 0, debuffref: 0, debuffrec: 0, debuffdur: 0, damage: 0};
+}
+}
+	window.addEventListener('beforeunload', function (e) {
+        // Cancel the event
+        e.preventDefault();
+        // Chrome requires the following line to be added.
+        e.returnValue = '';
+        // Display the warning message
+        e.returnValue = '';
+        var message = 'Are you sure you want to leave? You will lose all custom characters and skills, unfortunetly.';
+        e.returnValue = message;
+        return message;
+      });	
+		</script>
+	</body>
+</html>
+
